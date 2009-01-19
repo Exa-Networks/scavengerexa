@@ -23,5 +23,7 @@ cd /opt/scavenger
 #	/usr/bin/softlimit -m 15000000 \
 
 exec \
+	env \
+		mta="82.219.2.81" \
 	$PYTHON netfilter.py \
 2>&1
