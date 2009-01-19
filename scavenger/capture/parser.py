@@ -62,7 +62,7 @@ class Parser (object):
 				self.__log('skipping payload')
 				# update the key so it does not expire
 				cache['skip'] = True
-				return
+				return None
 		else:
 			cache = None
 
@@ -132,8 +132,10 @@ class Parser (object):
 				continue
 
 			if cmd == 'MAIL':
+				# <> becomes an empty sender
 				cache['sender'] = self.__email(line)
 				cache['recipient'] = ""
+				cache['count'] = 0
 				continue
 
 			if cmd == 'RCPT':
