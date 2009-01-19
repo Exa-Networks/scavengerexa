@@ -24,5 +24,8 @@ cd /opt/scavenger
 #	/usr/bin/softlimit -m 15000000 \
 
 exec \
-	env configuration="scavenger.conf" $PYTHON policy.py \
+	env \
+		configuration="scavenger.conf" \
+		ETC="/opt/scavenger/etc" \
+		$PYTHON policy.py \
 2>&1
