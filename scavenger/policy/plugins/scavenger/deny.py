@@ -18,8 +18,7 @@ from scavenger.policy.plugin import ScavengerPlugin
 from scavenger.policy.plugin import response
 
 
-#class DenyUser(response.ResponseBlock):
-class DenyUser(response.ResponseFilter):
+class DenyUser(response.ResponseBlock):
 	duration = 24*60*60
 
 
