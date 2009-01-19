@@ -50,6 +50,10 @@ class Greylisting(response.ResponseTempFail):
 
 
 class GreyDatabase(PluginDatabase):
+	debug = False
+	database_schema = [whitelist_create, tracking_create]
+	#cleanup_interval = 300
+
 	def ignore (self, ip):
 		query = "select 'true' as allow from %(table_whitelist)s where ip = ?" % tables
 		res = self.fetchone(query,ip)
@@ -96,9 +100,8 @@ class GreyDatabase(PluginDatabase):
 		return True
 
 class Grey(PostfixPlugin):
-	schema = [whitelist_create, tracking_create]
-	database_factory = GreyDatabase
-	#cleanup_interval = 300
+	debug = False
+	factory = GreyDatabase
 
 	def onInitialisation(self):
 		self.training = self.configuration.get('training', False)

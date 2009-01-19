@@ -57,6 +57,9 @@ class BlacklistingDomain(response.ResponseFail):
 
 
 class Database (PluginDatabase):
+	debug = False
+	database_schema = [bwlist_ip_create, bwlist_domain_create]
+
 	def getIPBWStatus(self, domain=None, ip=None, bw=None):
 		query = "select white from %s" % tables['table_bwlist_ip']
 		args = []
@@ -99,8 +102,8 @@ class Database (PluginDatabase):
 
 
 class BWDB(PostfixPlugin):
-	schema = [bwlist_ip_create, bwlist_domain_create]
-	database_factory = Database
+	debug = False
+	factory = Database
 
 	def onInitialisation(self):
 		self.training = self.configuration.get('training', False)

@@ -67,6 +67,9 @@ class TooManyBadUser (response.ResponseTempFail):
 
 
 class UserDB(PluginDatabase):
+	debug = False
+	database_schema = [create_guesser, create_recipient]
+
 	def add_recipient(self, queue_id, recipient, exist):
 		# time should be taken from the message
 		query = "INSERT INTO %(table_recipient)s (queue_id,recipient,exist,time) VALUES (?, ?, ?, datetime('now'))" % tables
@@ -124,8 +127,7 @@ class UserDB(PluginDatabase):
 
 class User (PostfixPlugin):
 	debug = False
-	database_factory = UserDB
-	schema = [create_guesser, create_recipient]
+	factory = UserDB
 
 	def onInitialisation (self):
 		self.vmchecker = VMChecker(self.configuration)
