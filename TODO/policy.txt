@@ -1,0 +1,30 @@
+The 'normal' postfix policy daemon is totally broken since the change of the internal API
+writting of intelligent anti-spam rules based on http://spamhints.org/
+
+There is a bug when you request more connection that the connection pool has.
+It seems that the threading can cause somehow a deadlock (or was causing)
+It can not be hit currently as the plugin are running with a global lock.
+To investigate in order to improve performance.
+
+We should fail gracefully if we do not have the right to read/write to the plugin DB folder
+
+2008/09/22 15:43 +0100 [-] initialisation of plugin greylist
+2008/09/22 15:43 +0100 [-]   * initialisation of the database
+2008/09/22 15:43 +0100 [-] Traceback (most recent call last):
+2008/09/22 15:43 +0100 [-]   File "ppolicyd.tac", line 79, in <module>
+2008/09/22 15:43 +0100 [-]     mailservice = MailPolicyService(configuration)
+2008/09/22 15:43 +0100 [-]   File "/usr/lib/python2.5/site-packages/ppolicyd/service.py", line 62, in __init__
+2008/09/22 15:43 +0100 [-]     if plugin.initialise(self):
+2008/09/22 15:43 +0100 [-]   File "/usr/lib/python2.5/site-packages/ppolicyd/plugin.py", line 64, in initialise
+2008/09/22 15:43 +0100 [-]     self.initialised = self._databaseConnection()
+2008/09/22 15:43 +0100 [-]   File "/usr/lib/python2.5/site-packages/ppolicyd/plugin.py", line 84, in _databaseConnection
+2008/09/22 15:43 +0100 [-]     self.database = ConnectionPool(name,sqlite_file)
+2008/09/22 15:43 +0100 [-]   File "/usr/lib/python2.5/site-packages/exa/database/pool.py", line 54, in __init__
+2008/09/22 15:43 +0100 [-]     self.connections.append(PoolConnection(self,self.api,*self.args,**self.kw))
+2008/09/22 15:43 +0100 [-]   File "/usr/lib/python2.5/site-packages/exa/database/pool.py", line 15, in __init__
+2008/09/22 15:43 +0100 [-]     Connection.__init__(self,*args,**kw)
+2008/09/22 15:43 +0100 [-]   File "/usr/lib/python2.5/site-packages/exa/database/connection.py", line 32, in __init__
+2008/09/22 15:43 +0100 [-]     self._connect()
+2008/09/22 15:43 +0100 [-]   File "/usr/lib/python2.5/site-packages/exa/database/connection.py", line 64, in _connect
+2008/09/22 15:43 +0100 [-]     self._connection = self.api2.connect(*self.args, **self.kw)
+2008/09/22 15:43 +0100 [-] sqlite3.OperationalError: unable to open database file

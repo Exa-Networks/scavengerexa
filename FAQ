@@ -1,0 +1,56 @@
+Q: Why is it called scavenger ?
+A: As it is a carnivore[1] which eats your network Junk[2]
+
+Q: What are the depencies for this program
+A: Python, tested with version 2.5.2[3]
+A: Twisted Matrix, event-driven networking engine [4]
+A: the packet capture library (pcap)[5]
+A: the dump packet module (dpkt)[6]
+A: optional for policy, MySQL [7] with the python MySQLdb modules [8]
+A: optional for policy, python memcached (memcache)[9][10] (not yet used)
+A: optional or action-netfilter, python netfilter[11]
+A: optional djb daemontools [12]
+
+Q: What licence is the code release under ?
+A: This code is released under the affero GPL licence v 3.0[13]
+A: Please not that this is the 3.0 only and not any later version
+A: (The author has not checked yet possible licence incompatibility issues)
+
+Q: Who hold the copyright for the code ?
+A: Thomas Mangin wrote most of the code whilst working for Exa Networks[14]
+A: his collegue David Farrar did provide a large among of not necessary
+A: correctly expressed in the later added copyright note
+
+Q: Can I contribute ?
+A: Sure, send us patches or idea.
+A: We may need you to send a signed copyright transfer document but
+A: as no-one done it yet, we have not set our mind
+
+Q: What hardware this is designed to run on
+A: The main development is done under Linux (both Redhat and Ubuntu)
+A: We have no idea if this runs correctly on other OSes.
+
+Q: What database can I use with for the policy server
+A: The policy server is using the Python Database API Specification v2.0[15]
+A: so it should trivial to port it to any DB with a DB-API2 interface.
+A: sqlite3 and MySQL have been tested, postgresql should just work
+A: If you are going to use MySQL you may want to read this article[16]
+A: If you are planning on testing postgresql look at this module[17]
+
+[1] http://en.wikipedia.org/wiki/Carnivore_(FBI)
+[2] http://en.wikipedia.org/wiki/Spam_(electronic)
+[3] http://www.python.org/download/releases/2.5.2/
+[4] http://twistedmatrix.com/
+[5] http://pypi.python.org/pypi/pcap/
+[6] http://pypi.python.org/pypi/dpkt/
+[7] http://mysql.org/
+[8] http://mysql-python.sourceforge.net/
+[9] http://pypi.python.org/pypi/python-memcached/
+[10] http://www.danga.com/memcached/
+[11] http://opensource.bolloretelecom.eu/projects/python-netfilter/
+[12] http://cr.yp.to/daemontools.html
+[13] http://www.gnu.org/licenses/agpl-3.0.txt
+[14] http://www.exa-networks.co.uk/
+[15] http://www.python.org/dev/peps/pep-0249/
+[16] http://lucumr.pocoo.org/2009/1/8/the-sad-state-of-mysql-python
+[17] http://pybrary.net/pg8000/

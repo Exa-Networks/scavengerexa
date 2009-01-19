@@ -1,0 +1,2 @@
+fully test the application
+add more try/except for possible DB errors (to make sure that the cleanup correctly rearms)

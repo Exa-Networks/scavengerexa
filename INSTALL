@@ -1,0 +1,38 @@
+Install (Redhat like machines)
+
+Install the dependencies
+
+Configure MySQL
+
+Allow network connection for MySQL
+# perl -pi -e "s/skip-networking/#skip-networking/" /etc/my.cnf
+
+http://dev.mysql.com/doc/refman/5.1/en/instance-manager-security-passwords.html
+
+Create a master user
+# mysqlmanager --passwd > /etc/mysqlmanager.passwd
+Creating record for new user.
+Enter user name: root
+Enter password: 
+Re-type password: 
+
+Restart Mysql
+# /etc/init.d/mysqld restart
+
+# mysql 
+mysql> CREATE USER user;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SET PASSWORD FOR user = PASSWORD('password');
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> update user set Select_priv='Y', Insert_priv='Y', Update_priv='Y', Delete_priv='Y', Create_priv='Y', Drop_priv='Y' where User = 'user';
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+#create database scavenger
+#grant all privileges on scavenger.* to user@"%" identified by 'password';
+
