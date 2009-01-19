@@ -12,7 +12,10 @@ import socket
 from scavenger.option import Option as BaseOption, OptionError
 
 class Option (BaseOption):
-	valid = ['debug','slow','port','timeout']
+	valid = ['debug','slow','port','timeout','smarthost','sender','recipient']
+
+	def __init__(self,*options):
+		BaseOption.__init__(self,*options)
 
 	def _timeout (self):
 		limit = self._env('timeout')

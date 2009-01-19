@@ -16,7 +16,7 @@ import sys
 import socket
 import smtplib
 
-from scavenger.action.option import Option
+from scavenger.action.option import Option,OptionError
 
 try:
         option = Option('debug','slow','port','smarthost','sender','recipient','timeout')
