@@ -21,12 +21,6 @@ except ImportError:
 	print "this program require python-netfilter http://opensource.bolloretelecom.eu/projects/python-netfilter/"
 	sys.exit(1)
 
-# Perform firewalling
-# Is given an IP and a time to block it, send the traffic to a dummy SMTP server
-# Keep state of the firewall
-# Can re-set pre-set rule on restart
-# Re-open the firewall on request
-
 import os
 from scavenger.action.option import Option as BaseOption, OptionError
 
@@ -92,7 +86,7 @@ if debug_option:
 	option.display()
 
 if debug_cleanup:
-	cleanup_time=1
+	cleanup_time=5
 else:
 	cleanup_time=60
 
@@ -297,6 +291,8 @@ class MailFactory (protocol.Factory):
 
 	def _cleanup (self,_):
 		if debug_cleanup: print 'cleanup'
+		self._reArm()
+
 		with self.lock:
 			delete = []
 			for start,end in self.rules:
@@ -308,7 +304,6 @@ class MailFactory (protocol.Factory):
 				self.table.delete_rule(option['chain'],rule)
 				del self.rules[(start,end)]
 				print 'expired rule %s/%d' % (toips(start),tobits(end-start+1))
-		self._reArm()
 
 # Starting ...
 
