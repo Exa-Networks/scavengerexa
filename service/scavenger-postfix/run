@@ -1,7 +1,6 @@
 #!/bin/sh
 
-export ETC=/opt/mail/etc
-export PYTHONPATH=$PYTHONPATH:/opt/lib:/opt/mail/lib
+export ETC=/opt/scavenger/etc
 
 PYTHONS="python25 python2.5 python"
 
