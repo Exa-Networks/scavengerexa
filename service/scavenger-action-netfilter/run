@@ -24,6 +24,14 @@ cd /opt/scavenger
 
 exec \
 	env \
-		mta="82.219.2.81" \
-	$PYTHON netfilter.py \
+		debug="0" \
+		port="25254" \
+		timeout=60 \
+		database="/opt/scavenger/db/action_netfilter" \
+		mta="82.219.2.81:25" \
+		ports="25 587" \
+		table="nat" \
+		chain="PREROUTING" \
+		jump="DNAT" \
+	$PYTHON action-netfilter.py \
 2>&1
