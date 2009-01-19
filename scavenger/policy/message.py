@@ -28,6 +28,7 @@ class PolicyMessageFactory (Factory):
 		're' :      'recipient',
 		'rc' :          'count',
 		'in' :       'instance',
+		'or' :         'origin',
 	}
 
 	_convert_value = {
@@ -40,6 +41,7 @@ class PolicyMessageFactory (Factory):
 		're' : lambda s,v:str(v),
 		'rc' : lambda s,v:str(v),
 		'in' : lambda s,v:str(v),
+		'or' : lambda s,v:str(v),
 	}
 
 	short = _convert_key.keys()

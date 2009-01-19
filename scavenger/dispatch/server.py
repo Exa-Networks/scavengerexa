@@ -27,8 +27,12 @@ class DispatchProtocol(DatagramProtocol):
 		# be careful self.factory already exists and is the reference to the factory which created us
 		self._factory = PolicyMessageFactory()
 		self._parser = Parser()
+		self._id = 0
 	
 	def datagramReceived(self, data, (host, port)):
+		id = self._id
+		self._id += 1
+
 		control = self._parser.parse(data)
 		
 		if control is None:
@@ -53,11 +57,12 @@ class DispatchProtocol(DatagramProtocol):
 			return
 
 		host,port = self.factory.getPolicy(client)
-		policy_client(host,port,self.dispatch,client,postfix)
+		if self.debug: print "[%7s] dispatching message from %s" % (id,client)
+		policy_client(host,port,self.dispatch,id,client,postfix)
 	
-	def dispatch (self,client,message):
+	def dispatch (self,id,client,message):
 		cmd = message.split(' ')[0]
-		if self.debug: print "%-15s %s" % (client,message)
+		if self.debug: print "[%7s] %-15s %s" % (id, client,message)
 		if cmd == 'DUNNO':
 			return
 		elif cmd in ['HOLD','FILTER']:

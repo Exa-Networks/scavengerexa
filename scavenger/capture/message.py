@@ -16,6 +16,10 @@ TypeInt = type(0)
 TypeLong = type(0L)
 
 class CaptureMessageFactory (Factory):
+	def __init__ (self,origin):
+		Factory.__init__(self)
+		self._origin = origin
+
 	def _check(self,tc,td,k,v):
 		if tc != td:
 			raise FactoryError('key \'%s\' is of %s not of %s "%s"' % (k,str(tc),str(td),str(v)))
@@ -32,6 +36,7 @@ class CaptureMessageFactory (Factory):
 		message['code'] = 0
 		message['count'] = 0
 		message['instance'] = self._instance()
+		message['origin'] = self._origin
 		return message
 
 	def fromDict (self,msg):

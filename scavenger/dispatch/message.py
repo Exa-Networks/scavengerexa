@@ -21,6 +21,7 @@ class DispatchMessageFactory (Factory):
 		're': lambda _:_,
 		'rc': lambda c:str(c),
 		'in': lambda _:_,
+		'or': lambda _:_,
 	}
 
 	_convert_key = {
@@ -33,6 +34,7 @@ class DispatchMessageFactory (Factory):
 		're':   'recipient',
 		'rc':       'count',
 		'in':    'instance',
+		'or':      'origin',
 	}
 	_keys = _convert_key.keys()
 
@@ -44,6 +46,7 @@ class DispatchMessageFactory (Factory):
 		message['he'] = ""
 		message['se'] = ""
 		message['re'] = ""
+		message['or'] = ""
 		message['co'] = 0
 		message['rc'] = 0
 		message['in'] = self._instance()

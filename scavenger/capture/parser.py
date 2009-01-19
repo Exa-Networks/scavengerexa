@@ -14,7 +14,7 @@ from scavenger.capture.message import CaptureMessageFactory, FactoryError
 
 class Parser (object):
 	def __init__ (self,cache,cidrs,debug):
-		self._factory = CaptureMessageFactory()
+		self._factory = CaptureMessageFactory('pcap')
 		self.debug = debug
 
 		self._internal = []

@@ -44,7 +44,7 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 	postfix_23 = ['encryption_protocol','encryption_cipher','encryption_keysize','etrn_domain',]
 	postfix_25 = ['stress',]
 
-	scavenger_10 = ['server_address','code']
+	scavenger_10 = ['server_address','code','origin']
 	
 	states = ['VRFY','ETRN','CONNECT','EHLO','HELO','MAIL','RCPT','DATA','END-OF-DATA',]
 	
@@ -186,7 +186,7 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 		if message['request'] != 'scavenger_access_policy':
 			return True
 
-		for k in ['server_address','code']:
+		for k in ['server_address','code','origin']:
 			if not message.has_key(k):
 				log.msg('scavenger message must have key %s' % k)
 				return False

@@ -29,13 +29,14 @@ from twisted.internet.protocol import ClientFactory
 class PostfixPolicyClientFactory(ClientFactory):
 	protocol = PostfixPolicyClientProtocol
 
-	def __init__(self,callback,client,message):
+	def __init__(self,callback,id,client,message):
+		self.id = id
 		self.callback = callback
 		self.client = client
 		self.message = message
 
 	def processAnswer (self,response):
-		self.callback(self.client,response)
+		self.callback(self.id,self.client,response)
 	
 	def getMessage (self):
 		return str(self.message)
@@ -43,8 +44,8 @@ class PostfixPolicyClientFactory(ClientFactory):
 
 from twisted.internet import reactor
 
-def policy_client (host,port,callback,client,kv):
+def policy_client (host,port,callback,id,client,kv):
 	# kv is a dictionary of what postfix send as key=value
-	factory = PostfixPolicyClientFactory(callback,client,kv)
+	factory = PostfixPolicyClientFactory(callback,id,client,kv)
 	reactor.connectTCP(host,port,factory)
 
