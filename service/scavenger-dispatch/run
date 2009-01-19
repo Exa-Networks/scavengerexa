@@ -1,0 +1,36 @@
+#!/bin/sh
+
+export ETC=/opt/mail/etc
+export PYTHONPATH=$PYTHONPATH:/opt/lib:/opt/mail/lib
+
+PYTHONS="python25 python2.5 python"
+
+for P in `echo $PYTHONS`;
+do
+	PYTHON=`which $P 2> /dev/null`
+	if [ ! -z "$PYTHON" ]; then
+		break
+	fi
+done
+
+if [ -z "$PYTHON" ]; then
+	echo "no python intepreter found"
+	sleep 10
+fi
+
+cd /opt/scavenger
+
+#	strace -vfF -o ./strace.txt \
+#	/usr/bin/softlimit -m 15000000 \
+
+six_hours=`echo "6 60 60 **p" | dc`
+
+exec \
+	env \
+		debug="1" \
+		policy="127.0.0.1:25253" \
+		filter="82.219.2.81" \
+		action="82.219.0.0/16>127.0.0.1:25254" \
+		time="$six_hours" \
+	$PYTHON dispatch.py \
+2>&1

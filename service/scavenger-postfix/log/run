@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/bin/setuidgid nobody /usr/bin/multilog t s5000000 /var/log/ppolicyd

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ ! -d /var/log/scavenger/action/mail ]; then
+	mkdir -p /var/log/scavenger/action/mail
+	chown -R nobody.nogroup /var/log/scavenger/action
+fi
+
+exec /usr/bin/setuidgid nobody /usr/bin/multilog t s5000000 /var/log/scavenger/action/mail

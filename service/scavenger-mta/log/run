@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ ! -d /var/log/scavenger/mta ]; then
+	mkdir -p /var/log/scavenger/mta
+	chown nobody.nogroup /var/log/scavenger/mta
+fi
+
+exec /usr/bin/setuidgid nobody /usr/bin/multilog t s5000000 /var/log/scavenger/mta

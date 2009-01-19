@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ ! -d /var/log/scavenger/policy ]; then
+	mkdir -p /var/log/scavenger/policy
+	chown nobody.nogroup /var/log/scavenger/policy
+fi
+
+exec /usr/bin/setuidgid nobody /usr/bin/multilog t s5000000 /var/log/scavenger/policy

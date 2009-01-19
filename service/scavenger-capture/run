@@ -1,0 +1,34 @@
+#!/bin/sh
+
+export ETC=/opt/mail/etc
+export PYTHONPATH=$PYTHONPATH:/opt/lib:/opt/mail/lib
+
+PYTHONS="python25 python2.5 python"
+
+for P in `echo $PYTHONS`;
+do
+	PYTHON=`which $P 2> /dev/null`
+	if [ ! -z "$PYTHON" ]; then
+		break
+	fi
+done
+
+if [ -z "$PYTHON" ]; then
+	echo "no python intepreter found"
+	sleep 10
+fi
+
+cd /opt/scavenger
+
+#	strace -vfF -o ./strace.txt \
+#	/usr/bin/softlimit -m 15000000 \
+
+exec \
+	env \
+		interface="eth0" \
+		internal="82.219.192.0/18 82.219.9.0/24" \
+		dispatch="127.0.0.1:25252" \
+		balance="1" \
+		debug="9" \
+		$PYTHON capture.py \
+2>&1

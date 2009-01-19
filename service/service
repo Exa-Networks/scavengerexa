@@ -1,0 +1,68 @@
+#!/bin/sh
+# /etc/rc.d/init.d/service
+#
+# chkconfig: 345 83 48
+# description: Start, stop, restart, reload, and otherwise signal service
+#
+
+PATH=/usr/local/bin:/usr/bin:/bin
+export PATH
+
+case "$1" in
+  start)
+    echo -n "Starting service services: svscan"
+    cd /service
+    env - PATH="$PATH" svscan &
+    echo $! > /var/run/service-svscan.pid
+    touch /var/lock/subsys/service
+    echo "."
+    ;;
+  stop)
+    echo -n "Stopping service services: svscan"
+    kill `cat /var/run/service-svscan.pid`
+    echo -n " service"
+    svc -dx /service/*
+    echo -n " logging"
+    svc -dx /service/*/log
+    echo "."
+    rm -rf /var/run/service-svscan.pid
+    rm -rf /var/lock/subsys/service
+    ;;
+  stat)
+    cd /service
+    svstat * */log
+    ;;
+  reload|hup)
+    echo "Sending HUP signal to service services."
+    svc -h /service/*
+    ;;
+  pause)
+    echo "Pausing service services"
+    svc -p /service/*
+    ;;
+  cont)
+    echo "Continuing service services"
+    svc -c /service/*
+    ;;
+  restart)
+    echo "Restarting service services:"
+    svc -d /service/*
+    svc -u /service/*
+    ;;
+  help)
+    cat <<HELP
+   stop -- stops services
+  start -- starts services
+  pause -- temporarily stops services
+   cont -- continues paused services
+   stat -- displays status of services
+restart -- stops and restarts services
+HELP
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|reload|stat|pause|cont|help}"
+    exit 1
+    ;;
+esac
+
+exit 0

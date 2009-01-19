@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ ! -d /var/log/scavenger/netfilter ]; then
+	mkdir -p /var/log/scavenger/netfilter
+	chown nobody.nogroup /var/log/scavenger/netfilter
+fi
+
+exec /usr/bin/setuidgid nobody /usr/bin/multilog t s5000000 /var/log/scavenger/netfilter
