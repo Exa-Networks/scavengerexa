@@ -19,6 +19,8 @@ fi
 
 cd /opt/scavenger
 
+find . -name dropin.cache | xargs rm
+
 #	strace -vfF -o ./strace.txt \
 #	/usr/bin/softlimit -m 15000000 \
 
