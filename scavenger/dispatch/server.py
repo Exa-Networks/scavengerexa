@@ -67,8 +67,8 @@ class DispatchProtocol(DatagramProtocol):
 		if cmd == 'DUNNO':
 			return
 		elif cmd in ['HOLD','FILTER']:
-			location = self.factory.getAction(client)
-			action_client(location[0],location[1],self.updateCache,client,message)
+			for location in self.factory.getActions(client):
+				action_client(location[0],location[1],self.updateCache,client,message)
 	
 	def updateCache (self,client,boolean):
 		if boolean:
@@ -95,13 +95,13 @@ class DispatchFactory(ServerFactory):
 	def getCache (self):
 		return self._cache
 
-	def getAction (self,client):
+	def getActions (self,client):
 		ip = toipn(client)
 		for k in self._action.keys():
 			start, end = k
 			if ip >= start and ip <= end:
-				return self._action[k]
-		return None
+				yield self._action[k]
+		raise StopIteration()
 
 	def buildProtocol (self):
 		p = self.protocol()

@@ -39,7 +39,10 @@ class Option (BaseOption):
 				raise OptionError('an action is of the syntax networks/netmask>server:port')
 			cidr = self._validate_cidr(parts[0].strip())
 			service = self._validate_service(parts[1].strip())
-			self['action'][tostartend(cidr)] = service
+			se = tostartend(cidr)
+			if se not in self['action']:
+				self['action'][se] = []
+			self['action'][se].append(service)
 		if len(self['action'].keys()) < 1:
 			raise OptionError('please setup at least one action server, separated by spaces if multiple action servers')
 
