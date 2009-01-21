@@ -81,7 +81,7 @@ class ResponseFilter (ScavengerResponse):
 	destination = "0.0.0.0:00000"
 
 	def __str__ (self):
-		return "action=%s %s [%s] (%s) %s" % (self.command,message['client_address'],self.destination,self.duration,self.message)
+		return "%s %s [%s] (%s) %s" % (self.command,message['client_address'],self.destination,self.duration,self.message)
 
 class ResponseBlock (ScavengerResponse):
 	command = "HOLD"

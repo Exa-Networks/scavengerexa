@@ -30,7 +30,7 @@ class ActionProtocol (LineReceiver):
 
 	def dataReceived (self,data):
 		try:
-			ip,action,message = data.strip().split(' ',2)
+			action,ip,message = data.strip().split(' ',2)
 		except (ValueError,TypeError):
 			self.invalid()
 			return
