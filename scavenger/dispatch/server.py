@@ -100,7 +100,8 @@ class DispatchFactory(ServerFactory):
 		for k in self._action.keys():
 			start, end = k
 			if ip >= start and ip <= end:
-				yield self._action[k]
+				for action in self._action[k]:
+					yield action
 		raise StopIteration()
 
 	def buildProtocol (self):
