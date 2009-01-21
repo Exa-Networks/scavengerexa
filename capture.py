@@ -124,6 +124,6 @@ while True:
 		message = cmf.fromCapture(capture)
 		if debug_udp:
 			print message
-		send_udp(option.diffusion,message['si'],option.servers,message)
+		send_udp(option.diffusion,message['si'],option.dispatch,message)
 
 
