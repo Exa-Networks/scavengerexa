@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export ETC=/opt/scavenger/etc
+export PYTHONPATH=$PYTHONPATH:/opt/scavenger/lib
 
 PYTHONS="python25 python2.5 python"
 
@@ -17,7 +18,7 @@ if [ -z "$PYTHON" ]; then
 	sleep 10
 fi
 
-cd /opt/scavenger
+cd /opt/scavenger/daemon
 
 find . -name dropin.cache | xargs rm
 
@@ -27,5 +28,5 @@ find . -name dropin.cache | xargs rm
 exec \
 	env \
 		configuration="scavenger.conf" \
-		$PYTHON policy.py \
+	$PYTHON policy.py \
 2>&1

@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export ETC=/opt/scavenger/etc
+export PYTHONPATH=$PYTHONPATH:/opt/scavenger/lib
 
 PYTHONS="python25 python2.5 python"
 
@@ -17,7 +18,7 @@ if [ -z "$PYTHON" ]; then
 	sleep 10
 fi
 
-cd /opt/scavenger
+cd /opt/scavenger/daemon
 
 #	strace -vfF -o ./strace.txt \
 #	/usr/bin/softlimit -m 15000000 \
