@@ -75,9 +75,9 @@ class Parser (object):
 					self.__log('invalid command [%s]' % ''.join([c for c in str(line)[:4] if c.isalnum()]))
 
 					cache = self._factory.new()
-					cache['source'] = toips(self.si)
-					cache['destination'] = toips(self.di)
-					cache['state'] = ''
+					cache['si'] = toips(self.si)
+					cache['di'] = toips(self.di)
+					cache['st'] = ''
 					cache['skip'] = True
 
 					self._cache[k] = cache 
@@ -88,9 +88,9 @@ class Parser (object):
 					self.__log('invalid command [%s]' % ''.join([c for c in str(line)[:4] if c.isalnum()]))
 
 					cache = self._factory.new()
-					cache['source'] = toips(self.si)
-					cache['destination'] = toips(self.di)
-					cache['state'] = ''
+					cache['si'] = toips(self.si)
+					cache['di'] = toips(self.di)
+					cache['st'] = ''
 					cache['skip'] = True
 
 					self._cache[k] = cache
@@ -109,10 +109,10 @@ class Parser (object):
 				self.__log('creating %s tracking' % cmd)
 
 				cache = self._factory.new()
-				cache['source'] = toips(self.si)
-				cache['destination'] = toips(self.di)
-				cache['state'] = cmd
-				cache['helo'] = line[4:].strip()
+				cache['si'] = toips(self.si)
+				cache['di'] = toips(self.di)
+				cache['st'] = cmd
+				cache['he'] = line[4:].strip()
 
 				self._cache[k] = cache
 				continue
@@ -120,27 +120,27 @@ class Parser (object):
 			if cache is None:
 				if cmd == 'MAIL':
 					cache = self._factory.new()
-					cache['source'] = toips(self.si)
-					cache['destination'] = toips(self.di)
+					cache['si'] = toips(self.si)
+					cache['di'] = toips(self.di)
 				else:
 					self.__log('no command tracking')
 					continue
 
-			cache['state'] = cmd
+			cache['st'] = cmd
 
 			if cmd in ['HELP','VRFY','ETRN','AUTH']:
 				continue
 
 			if cmd == 'MAIL':
 				# <> becomes an empty sender
-				cache['sender'] = self.__email(line)
-				cache['recipient'] = ""
-				cache['count'] = 0
+				cache['se'] = self.__email(line)
+				cache['re'] = ""
+				cache['rc'] = 0
 				continue
 
 			if cmd == 'RCPT':
-				cache['recipient'] = self.__email(line)
-				cache['count'] += 1
+				cache['re'] = self.__email(line)
+				cache['rc'] += 1
 				continue
 
 			if cmd == 'DATA':
@@ -160,10 +160,10 @@ class Parser (object):
 		if cache['skip']:
 			self.__log('set to start reading command')
 			cache['skip'] = False
-			if cache['state'] == 'DATA':
-				cache['state'] = 'END-OF-DATA'
+			if cache['st'] == 'DATA':
+				cache['st'] = 'END-OF-DATA'
 		else:
-			if cache['state'] == 'DATA':
+			if cache['st'] == 'DATA':
 				cache['skip'] = True
 
 		line = data.split('\n')[0]
@@ -180,11 +180,11 @@ class Parser (object):
 			return None
 
 		self.__log('response is [%s]' % code)
-		cache['code'] = code
+		cache['co'] = code
 
-		if cache['state'] in ['HELO','EHLO','MAIL','RCPT','DATA','END-OF-DATA']:
+		if cache['st'] in ['HELO','EHLO','MAIL','RCPT','DATA','END-OF-DATA']:
 			return cache
-		self.__log('skipping answer for unmonitored state %s' % cache['state'])
+		self.__log('skipping answer for unmonitored state %s' % cache['st'])
 		return None
 
 	def select (self,si,sp,di,dp):

@@ -19,7 +19,6 @@ from scavenger.option import Option as BaseOption, OptionError
 from scavenger.cache import ExpirationCache as Cache
 from scavenger.capture.wire import Wire
 from scavenger.capture.parser import Parser
-from scavenger.dispatch.message import DispatchMessageFactory, FactoryError
 
 class Option (BaseOption):
 	valid = ['debug','slow','diffusion','promiscuous','interface','internal','dispatch']
@@ -105,7 +104,6 @@ if debug_option:
 # This time is the time we assume the spammer will not wait between headers after which we forget a conversation
 cache = Cache(65,debug_cache)
 parser = Parser(cache,option.internal,debug_parser)
-cmf = DispatchMessageFactory()
 
 while True:
 	for (si,sp),(di,dp),data in Wire(interface=option.interface,promiscuous=option.promiscuous):
@@ -115,15 +113,16 @@ while True:
 			print >> sys.stderr, '_'*80
 
 		try:
-			capture = parser.select(si,sp,di,dp).parse(data)
+			message = parser.select(si,sp,di,dp).parse(data)
 		except FactoryError,e:
 			print >> sys.stderr, "%s:%d -> %s:%d : %s" % (toips(si),sp,toips(di),dp,str(e))
 
-		if capture is None:
+		if message is None:
 			continue
-		message = cmf.fromCapture(capture)
+
 		if debug_udp:
 			print message
+
 		send_udp(option.diffusion,message['si'],option.dispatch,message)
 
 

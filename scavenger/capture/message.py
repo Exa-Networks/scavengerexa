@@ -27,16 +27,16 @@ class CaptureMessageFactory (Factory):
 	def new (self):
 		message = Message()
 		message['skip'] = False
-		message['state'] = ""
-		message['helo'] = ""
-		message['sender'] = ""
-		message['recipient'] = ""
-		message['source'] = ""
-		message['destination'] = ""
-		message['code'] = 0
-		message['count'] = 0
-		message['instance'] = self._instance()
-		message['origin'] = self._origin
+		message['st'] = ""
+		message['he'] = ""
+		message['se'] = ""
+		message['re'] = ""
+		message['si'] = ""
+		message['di'] = ""
+		message['co'] = 0
+		message['rc'] = 0
+		message['in'] = self._instance()
+		message['or'] = self._origin
 		return message
 
 	def fromDict (self,msg):
@@ -45,12 +45,12 @@ class CaptureMessageFactory (Factory):
 			t = type(v)
 			if k in ['skip']:
 				self._check(t,TypeBool,k,v)
-			elif k in ['state']:
+			elif k in ['st']:
 				self._check(t,TypeString,k,v)
 				v = v.upper()
 				if v and v not in ['HELP','HELO','EHLO','VRFY','ETRN','RSET','AUTH','MAIL','RCPT','DATA','END-OF-DATA','QUIT']:
 					raise FactoryError('not a valide state "%s"' % str(v))
-			elif k in ['source','destination']:
+			elif k in ['si','di']:
 				self._check(t,TypeString,k,v)
 				p = v.split('.')
 				if p.count(':'):
@@ -60,7 +60,7 @@ class CaptureMessageFactory (Factory):
 				for n in p:
 					if not n.isdigit():
 						raise FactoryError('not a valid IP "%s"' % v)
-			elif k in ['count']:
+			elif k in ['rc']:
 				if t == TypeString:
 					if v.isdigit():
 						v = int(v)
@@ -68,7 +68,7 @@ class CaptureMessageFactory (Factory):
 						self._check(t,TypeInt,k,v)
 				else:
 					self._check(t,TypeInt,k,v)
-			elif k in ['code']:
+			elif k in ['co']:
 				if t == TypeString:
 					if v.isdigit():
 						v = int(v)
@@ -78,7 +78,7 @@ class CaptureMessageFactory (Factory):
 					self._check(t,TypeInt,k,v)
 				if v < 0 or v >= 600:
 					raise FactoryError('the number can not be a SMTP code "%s"' % str(v))
-			elif k in ['sender','recipient']:
+			elif k in ['se','re']:
 				self._check(t,TypeString,k,v)
 				v = v.lower()
 				if v and v.count('@') != 1:
