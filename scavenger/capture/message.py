@@ -16,7 +16,7 @@ TypeInt = type(0)
 TypeLong = type(0L)
 
 class CaptureMessageFactory (Factory):
-	def __init__ (self,origin):
+	def __init__ (self,origin=''):
 		Factory.__init__(self)
 		self._origin = origin
 
@@ -39,12 +39,13 @@ class CaptureMessageFactory (Factory):
 		message['or'] = self._origin
 		return message
 
-	def fromDict (self,msg):
+	def fromCapture (self,msg):
 		message = Message()
 		for k,v in msg.iteritems():
 			t = type(v)
 			if k in ['skip']:
 				self._check(t,TypeBool,k,v)
+				continue
 			elif k in ['st']:
 				self._check(t,TypeString,k,v)
 				v = v.upper()

@@ -11,7 +11,7 @@ See LICENSE for details.
 from scavenger.message import FactoryError
 
 class Parser (object):
-	def __init__ (self,factory,debug):
+	def __init__ (self,factory=None,debug=False):
 		self.debug = debug
 		self._factory = factory
 
@@ -36,8 +36,11 @@ class Parser (object):
 		if not valid:
 			return None
 
+		if self._factory is None:
+			return message
+
 		try:
-			return self._factory.fromDict(message)
+			return self._factory.fromCapture(message)
 		except FactoryError,e:
 			print 'message is not valid', str(e)
 			if self.debug:

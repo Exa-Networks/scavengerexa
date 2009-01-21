@@ -12,46 +12,34 @@ debug = False
 
 from twisted.internet.protocol import DatagramProtocol
 
-from scavenger.tools.ip import source_hash
-from scavenger.policy.message import PolicyMessageFactory
+from scavenger.tools.ip import source_hash, toipn
 from scavenger.cache import LockedExpirationCache as Cache
-from scavenger.message import FactoryError
-from scavenger.dispatch.parser import Parser
+from scavenger.capture.message import CaptureMessageFactory
+from scavenger.parser import Parser
 from scavenger.policy.client import policy_client
-from scavenger.tools.ip import toipn
 from scavenger.action.client import action_client
 
 class DispatchProtocol(DatagramProtocol):
 	debug = True
 
 	def startProtocol(self):
-		# be careful self.factory already exists and is the reference to the factory which created us
-		self._factory = PolicyMessageFactory()
-		self._parser = Parser()
+		self._parser = Parser(CaptureMessageFactory())
 		self._id = 0
 	
 	def datagramReceived(self, data, (host, port)):
 		id = self._id
 		self._id += 1
 
-		control = self._parser.parse(data)
+		message = self._parser.parse(data)
 		
-		if control is None:
+		if message is None:
 			return
 
-		try:
-			postfix = self._factory.fromControl(control)
-		except FactoryError,e:
-			print 'could not convert the control message'
-			print str(e)
-			print control
-			return
-
-		if postfix['server_address'] in self.factory.getFilters():
+		if message['di'] in self.factory.getFilters():
 			# this spammer was already intercepted by our trap MTA
 			return
 
-		client = postfix['client_address']
+		client = message['si']
 
 		if self.factory.getCache().has_key(client):
 			# we already notified the action server about this spammer
@@ -59,7 +47,7 @@ class DispatchProtocol(DatagramProtocol):
 
 		host,port = self.factory.getPolicy(client)
 		if self.debug: print "[%7s] dispatching message from %s" % (id,client)
-		policy_client(host,port,self.dispatch,id,client,postfix)
+		policy_client(host,port,self.dispatch,id,client,message)
 	
 	def dispatch (self,id,client,message):
 		cmd = message.split(' ')[0]

@@ -12,7 +12,7 @@ from twisted.internet import reactor,defer
 from twisted.python import log
 from twisted.protocols import basic
 
-class MailPolicyProtocol(basic.LineReceiver):
+class _MailPolicyProtocol(basic.LineReceiver):
 	debug = True
 	errorReturn = {'error': ('dunno', None), 'connection': ('dunno', None)}
 	sanitise = {'protocol_state': lambda s: s.strip().upper()}
@@ -55,7 +55,7 @@ class MailPolicyProtocol(basic.LineReceiver):
 			keys = ['client_address','protocol_state','sender','recipient']
 			log.msg(", ".join(["%s" % self.action[k] for k in keys if self.action.has_key(k)]))
 
-		message = self.factory.sanitiseMessage(self.action)
+		message = self.factory.sanitiseMessage(self.convert())
 		
 		if not self.factory.validateMessage(message):
 			log.msg('client %s sent an invalid request' % self.transport.getPeer().host)
@@ -99,3 +99,16 @@ class MailPolicyProtocol(basic.LineReceiver):
 
 		reactor.callFromThread(lambda _args: reactor.callLater(0, d.callback, _args), string)
 
+
+class PostfixPolicyProtocol(_MailPolicyProtocol):
+	def convert (self):
+		return self.action
+
+
+from scavenger.policy.message import PolicyMessageFactory
+
+class ScavengerPolicyProtocol(_MailPolicyProtocol):
+	_convert = PolicyMessageFactory()
+
+	def convert (self):
+		return self._convert.fromCapture(self.action)

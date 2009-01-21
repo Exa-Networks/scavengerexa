@@ -46,7 +46,7 @@ class PolicyMessageFactory (Factory):
 
 	short = _convert_key.keys()
 
-	def fromControl (self,msg):
+	def fromCapture (self,msg):
 		for k in self.short:
 			if not k in msg:
 				raise FactoryError ('missing key [%s]' % k)

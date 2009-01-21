@@ -29,7 +29,7 @@ from twisted.python import log
 from twisted.internet import protocol
 from twisted.internet import defer
 
-from scavenger.policy.protocol import MailPolicyProtocol
+from scavenger.policy.protocol import PostfixPolicyProtocol,ScavengerPolicyProtocol
 from scavenger.policy.service import IMailPolicyService
 
 message = "[policy server reports] message %(msg)s\ncode %(code)s"
@@ -48,9 +48,14 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 	
 	states = ['VRFY','ETRN','CONNECT','EHLO','HELO','MAIL','RCPT','DATA','END-OF-DATA',]
 	
-	protocol = MailPolicyProtocol
-	
 	def __init__ (self,service):
+		if service.getType() == 'scavenger':
+			self.protocol = ScavengerPolicyProtocol
+		elif service.getType() == 'postfix':
+			self.protocol = PostfixPolicyProtol 
+		else:
+			raise ValueError('unknow protocol option (scavenger,postfix)')
+
 		log.msg('+'*80)
 		self.plugins = {}
 		self.service = service

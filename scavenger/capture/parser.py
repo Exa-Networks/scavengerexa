@@ -220,7 +220,7 @@ class Parser (object):
 			return None
 
 		try:
-			return self._factory.fromDict(capture)
+			return self._factory.fromCapture(capture)
 		except FactoryError,e:
 			raise
 
