@@ -12,6 +12,7 @@ debug = False
 
 from twisted.internet.protocol import DatagramProtocol
 
+from scavenger.tools.ip import source_hash
 from scavenger.policy.message import PolicyMessageFactory
 from scavenger.cache import LockedExpirationCache as Cache
 from scavenger.message import FactoryError
@@ -80,14 +81,12 @@ class DispatchFactory(ServerFactory):
 
 	def __init__ (self,policies,filters,action,time):
 		self._policies = policies
-		self._number = len(policies)
 		self._filters = filters
 		self._cache = Cache(time)
 		self._action = action
 
 	def getPolicy (self,address):
-		hash = int(address.split('.')[-1]) % self._number
-		return self._policies[hash]
+		return source_hash(address,self._policies)
 
 	def getFilters (self):
 		# XXX: This is not lock protected so only read access should be done

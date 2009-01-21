@@ -131,6 +131,11 @@ def tostartend (cidr):
 
 _next = {} 
 
+def source_hash (address,servers):
+	# This is IPv4 only ...
+	hash = int(address.split('.')[-1]) % len(servers)
+	return servers[hash]
+
 def next_server (servers):
 	while True:
 		for server in servers:
@@ -153,7 +158,7 @@ def send_udp (diffusion,address,servers,message):
 		server = _next[key].next()
 		sock.sendto(p,server)
 	elif diffusion == 'sr':
-		hash = int(address.split('.')[-1]) % len(servers)
+		server = source_hash(address,servers)
 		server = servers[hash]
 		sock.sendto(p,server)
 	elif diffusion == 'all':
