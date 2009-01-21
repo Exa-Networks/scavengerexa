@@ -71,10 +71,12 @@ class Option (dict):
 		if self['slow']:
 			self['slow'] = not not self['slow']
 			 
-	def _balance (self):
-		self['balance'] = self._has('balance')
-		if self['balance']:
-			self['balance'] = not not self['balance']
+	def _diffusion (self):
+		self['diffusion'] = self._env('diffusion')
+		if not self['diffusion']:
+			raise OptionError('diffusion method is not set (one: do not balance traffic, rr: roundrobin between sources, sh: sourcehash sender, all: send a copy to every server)')
+		if self['diffusion'] not in ['none','rr','sh','all']:
+			raise OptionError('diffusion method is not set (one: no balancing, rr: roundrobin, sh: sourcehash, all: every destination)')
 
 
 	def _validate_service (self,service):

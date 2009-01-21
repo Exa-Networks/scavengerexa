@@ -136,7 +136,7 @@ def next_server (servers):
 		for server in servers:
 			yield server
 
-def send_udp (balance,servers,message):
+def send_udp (diffusion,address,servers,message):
 	p = str(message)
 	sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 
@@ -144,11 +144,20 @@ def send_udp (balance,servers,message):
 	tmp.sort()
 	key = str(tmp)
 
-	if balance:
+	if diffusion == 'one':
+		server = servers[0]
+		sock.sendto(p,server)
+	elif diffusion == 'rr':
 		if key not in _next:
 			_next[key] = next_server(servers)
 		server = _next[key].next()
 		sock.sendto(p,server)
-	else:
+	elif diffusion == 'sr':
+		hash = int(address.split('.')[-1]) % len(servers)
+		server = servers[hash]
+		sock.sendto(p,server)
+	elif diffusion == 'all':
 		for server in servers:
 			sock.sendto(p,server)
+	else:
+		raise ValueError('invalid value for diffusion : %s', str(diffusion))

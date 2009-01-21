@@ -22,7 +22,7 @@ from scavenger.capture.parser import Parser
 from scavenger.dispatch.message import DispatchMessageFactory, FactoryError
 
 class Option (BaseOption):
-	valid = ['debug','slow','balance','promiscuous','interface','internal','dispatch']
+	valid = ['debug','slow','diffusion','promiscuous','interface','internal','dispatch']
 
 	def _promiscuous (self):
 		# should the interface be in promiscuous mode
@@ -124,6 +124,6 @@ while True:
 		message = cmf.fromCapture(capture)
 		if debug_udp:
 			print message
-		send_udp(option.balance,option.dispatch,message)
+		send_udp(option.diffusion,message['si'],option.servers,message)
 
 

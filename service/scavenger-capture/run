@@ -27,7 +27,7 @@ exec \
 		interface="eth0" \
 		internal="82.219.192.0/18 82.219.9.0/24" \
 		dispatch="127.0.0.1:25252" \
-		balance="1" \
+		diffusion="rr" \
 		debug="9" \
 		$PYTHON capture.py \
 2>&1
