@@ -1,3 +1,4 @@
 Replace the builtin dictionary cache for python memcached[1] if the current implementation causes scalability/stability issue on high load
 The factory are used to validate data once parsed, have some more strict, specific function for that.
 Make sure that any exa specific code is optional : dependancy on vmailmgr code and vproxy code
+self._factory is not clear as a variable name, found one more appropriate
