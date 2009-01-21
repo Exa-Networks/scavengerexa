@@ -46,13 +46,13 @@ class DispatchProtocol(DatagramProtocol):
 			return
 
 		host,port = self.factory.getPolicy(client)
-		if self.debug: print "[%7s] dispatching message from %s" % (id,client)
+		if self.debug: print "[%7s] %-15s dispatching message to %s:%s" % (id,client,host,port)
 		policy_client(host,port,self.dispatch,id,client,message)
 	
 	def dispatch (self,id,client,message):
 		cmd = message.split(' ')[0]
-		if self.debug: print "[%7s] %-15s %s" % (id, client,message)
-		if cmd == 'DUNNO':
+		if self.debug: print "[%7s] %-15s policy answers %s" % (id, client,message)
+		if cmd == 'HAM':
 			return
 		elif cmd in ['HOLD','FILTER']:
 			for location in self.factory.getActions(client):

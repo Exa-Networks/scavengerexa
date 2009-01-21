@@ -15,13 +15,7 @@ class PostfixPolicyClientProtocol(Protocol):
 		self.transport.write(self.factory.getMessage())
 
 	def dataReceived(self, data):
-		data = data.strip()
-		if not data.count('='):
-			return
-		action,response = data.split('=',1)
-		if action.lower() != 'action':
-			return
-		self.factory.processAnswer(response)
+		self.factory.processAnswer(data.strip())
 
 
 from twisted.internet.protocol import ClientFactory

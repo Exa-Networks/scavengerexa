@@ -73,7 +73,7 @@ class ScavengerResponse (PluginResponse):
 			self.destination = destination
 
 	def __str__ (self):
-		return "action=%s (%s) %s" % (self.command,self.duration,self.message)
+		return "%s %s (%s) %s" % (self.command,message['client_address'],self.duration,self.message)
 
 class ResponseFilter (ScavengerResponse):
 	command = "FILTER"
@@ -81,7 +81,7 @@ class ResponseFilter (ScavengerResponse):
 	destination = "0.0.0.0:00000"
 
 	def __str__ (self):
-		return "action=%s [%s] (%s) %s" % (self.command,self.destination,self.duration,self.message)
+		return "action=%s %s [%s] (%s) %s" % (self.command,message['client_address'],self.destination,self.duration,self.message)
 
 class ResponseBlock (ScavengerResponse):
 	command = "HOLD"
@@ -97,7 +97,7 @@ class ResponseUndetermined (PluginResponse):
 
 	def __str__ (self):
 		if self.type == 'scavenger':
-			return 'action=DUNNO'
+			return 'HAM'
 		if self.type == 'postfix':
 			return 'action=DUNNO'
 		if self.type == 'generic':
