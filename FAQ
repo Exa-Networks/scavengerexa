@@ -31,6 +31,8 @@ A: The main development is done under Linux (both Redhat and Ubuntu)
 A: We have no idea if this runs correctly on other OSes.
 
 Q: What database can I use with for the policy server
+A: You should NOT use sqlite3 in a production database at this moment in time
+A: but it can be used to evaluate the software without to have to install a database
 A: The policy server is using the Python Database API Specification v2.0[15]
 A: so it should trivial to port it to any DB with a DB-API2 interface.
 A: sqlite3 and MySQL have been tested, postgresql should just work

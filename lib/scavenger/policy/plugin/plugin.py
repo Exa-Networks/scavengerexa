@@ -71,6 +71,12 @@ class ISpamPlugin (Interface):
 	def police (message):
 		"""returns what we think of a message"""
 
+	def update (message):
+		"""perform any long term storage of information needed even if the test is not performed"""
+
+	def check (message):
+		"""return a Exception telling the engine what to do"""
+
 #	initialised = Attribute("""Was the initialise() function been call and successful""")
 
 import response
@@ -124,6 +130,12 @@ class PluginDatabase (object):
 		return errors	
 
 	def threadSafe (self):
+		# SQLITE3 seems to not be happy when multiple write are done at the same time
+		# and reports: sqlite3.OperationalError: database is locked
+
+		if self.api == 'sqlite3':
+			return False
+
 		# All the modules currently report a thread safety of 1
 		# So this always returns False
 
@@ -284,6 +296,9 @@ class _SpamPlugin (object):
 		self.cleanup()
 		reactor.callLater(self.cleanup_interval, self._cleanup)
 		
+	def update(self):
+		return
+
 	def cleanup(self):
 		return True
 
