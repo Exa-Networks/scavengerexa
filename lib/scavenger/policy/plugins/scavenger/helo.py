@@ -39,11 +39,11 @@ create table if not exists %(table_helo)s (
 
 
 class InconstantHelo (response.ResponseFilter):
-	duhelon = 24*60*60
+	duration = 24*60*60
 
 class TooManyHelo (response.ResponseFilter):
 	message = 'The source IP has too many different HELO'
-	duhelon = 24*60*60
+	duration = 24*60*60
 
 class HeloDB (PluginDatabase):
 	debug = False
@@ -104,12 +104,12 @@ class Helo (ScavengerPlugin):
 		return ['postgresql','sqlite3','mysql']
 
 	def requiredAttributes (self):
-		return ['protocol_state','client_address','helo']
+		return ['protocol_state','client_address','helo_name']
 
 	def check (self, message):
 		state = message.get('protocol_state','').lower()
 		client = message['client_address']
-		helo = message['helo']
+		helo = message['helo_name']
 		
 		if not self.database.increment(client,server,helo):
 			try:

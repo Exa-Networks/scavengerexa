@@ -18,9 +18,11 @@ if [ -z "$PYTHON" ]; then
 	sleep 10
 fi
 
-cd /opt/scavenger/daemon
+cd /opt/scavenger/
 
 find . -name dropin.cache | xargs rm
+
+cd /opt/scavenger/daemon
 
 #	strace -vfF -o ./strace.txt \
 #	/usr/bin/softlimit -m 15000000 \
