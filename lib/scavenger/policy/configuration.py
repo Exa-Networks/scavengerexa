@@ -146,7 +146,7 @@ class Configuration (dict):
 		self.etc = os.environ.get('ETC','/etc')
 		self.cache = os.environ.get('CACHE','/var/cache')
 		
-		self.configuration = os.path.join(self.etc,'policy',name)
+		self.configuration = os.path.join(self.etc,'scavenger','policy',name)
 		self.line = ""
 		self.number = 0
 

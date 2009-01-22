@@ -1,3 +1,6 @@
+currently the HOLD/FILTER switch is determined by the type of exception we raise.
+Replace this with a generic return type and have the type of return be in the configuration file.
+
 The 'normal' postfix policy daemon is totally broken since the change of the internal API
 writting of intelligent anti-spam rules based on http://spamhints.org/
 

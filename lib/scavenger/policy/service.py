@@ -126,7 +126,7 @@ class MailPolicyService (service.Service):
 	def getConfiguration (self,name):
 		with self.configuration_lock:
 			generic = self.configuration.copy()
-			configuration = Configuration(name+'.conf')
+			configuration = Configuration(os.path.join(self.type,name+'.conf'))
 			generic.update(configuration)
 			return generic
 			
