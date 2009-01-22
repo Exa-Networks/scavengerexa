@@ -35,16 +35,21 @@ if not option['slow']:
 		print 'Psyco is not available'
 
 debug_option = not not option.debug & 1
+debug_sending = not not option.debug & 2
+debug_protocol = not not option.debug & 4
 
 if debug_option:
 	option.display()
+	print "no mail sending", debug_sending
+	print "debug protocol ", debug_protocol
+	print "+"*80
 
 from scavenger.action.protocol import ActionProtocol
 
 class MailProtocol (ActionProtocol):
-	debug = True
+	debug = debug_protocol
 	def run (self,ip,action,destination,duration,message):
-		if self.debug:
+		if debug_sending:
 			print 'no email sent in debug mode'
 			return
 		subject = 'action required to stop a spammer'

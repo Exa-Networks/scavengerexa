@@ -104,17 +104,15 @@ except OptionError, e:
         print str(e)
         sys.exit(1)
 
-debug_option = option.debug & 1
-debug_connection = option.debug & 2
-debug_conversation = option.debug & 4
-
-print 'debug option : %s' % bool(debug_option)
-print 'debug connection    : %s' % bool(debug_connection)
-print 'debug conversation  : %s' % bool(debug_conversation)
-print
+debug_option = not not option.debug & 1
+debug_connection = not not option.debug & 2
+debug_conversation = not not option.debug & 4
 
 if debug_option:
 	option.display()
+	print 'debug connection  ',debug_connection
+	print 'debug conversation',debug_conversation
+	print "+"*80
 
 # Variables ....
 

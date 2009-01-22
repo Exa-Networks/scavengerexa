@@ -68,10 +68,11 @@ if not option['slow']:
 	except ImportError:
 		print 'Psyco is not available'
 
-debug_option = option.debug & 1
+debug_option = not not option.debug & 1
 
 if debug_option:
 	option.display()
+	print "+"*80
 
 from scavenger.dispatch.server import DispatchFactory
 

@@ -39,6 +39,12 @@ except	OptionError, e:
 	print '%s' % str(e)
 	sys.exit(1)
 
+debug_option = not not option.debug & 1
+        
+if debug_option:
+	option.display()
+	print "+"*80
+
 # Enabling (or not) psycho
 
 if not option['slow']:

@@ -84,6 +84,9 @@ debug_database = not not option.debug & 4
 
 if debug_option:
 	option.display()
+	print "debug cleanup ", debug_cleanup
+	print "debug database", debug_database
+	print "+"*80
 
 if debug_cleanup:
 	cleanup_time=5
