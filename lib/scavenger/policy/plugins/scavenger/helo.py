@@ -104,11 +104,11 @@ class Helo (ScavengerPlugin):
 		return ['postgresql','sqlite3','mysql']
 
 	def requiredAttributes (self):
-		return ['protocol_state','client_address','helo_name']
+		return ['client_address','server_address','helo_name']
 
-	def check (self, message):
-		state = message.get('protocol_state','').lower()
+	def update (self, message):
 		client = message['client_address']
+		client = message['server_address']
 		helo = message['helo_name']
 		
 		if not self.database.increment(client,server,helo):
@@ -117,8 +117,11 @@ class Helo (ScavengerPlugin):
 			except self.database.api2.IntegrityError:
 				pass
 			finally:
-				self.database.increment(client,server,state,code)
+				self.database.increment(client,server,helo)
 		
+	def check (self,message):
+		client = message['client_address']
+
 		if self.max_helo:
 			r = self.database.nb_helo(client)
 			if r is None:
@@ -129,7 +132,6 @@ class Helo (ScavengerPlugin):
 				return TooManyHelo()
 		
 		return response.ResponseContinue()
-
 
 	def cleanup(self):
 		self.database.cleanup()

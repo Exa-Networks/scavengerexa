@@ -135,13 +135,13 @@ class Ratio (ScavengerPlugin):
 		return ['postgresql','sqlite3','mysql']
 
 	def requiredAttributes (self):
-		return ['protocol_state','client_address','server_address','code']
+		return ['client_address','server_address','protocol_state','code']
 
-	def check (self, message):
-		state = message.get('protocol_state','').lower()
+	def update (self, message):
 		client = message['client_address']
 		#server = message['server_address']
 		server = '0.0.0.0'
+		state = message['protocol_state'].lower()
 		code = message['code']
 	
 		if code[0] in self.codes.get(state,[]):
@@ -154,6 +154,9 @@ class Ratio (ScavengerPlugin):
 				finally:
 					self.database.increment(client,server,state,code)
 
+	def check (self, message):
+		client = message['client_address']
+	
 		r = self.database.stats(client)
 		if r is None:
 			# This should be impossible ..

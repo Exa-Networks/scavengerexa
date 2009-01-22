@@ -31,15 +31,11 @@ class Deny (ScavengerPlugin):
 		self.blocked = ['^'+p+('$' if p.count('@') else '@.*$') for p in blocked.split()]
 		return True
 	
-	def validateAttributes(self, message):
-		try:
-			assert isinstance(message.get('recipient', None), str)
-			return True
-		except AssertionError:
-			return False
+	def requiredAttributes (self):
+		return ['recipient']
 
 	def check(self, message):
-		recipient = message.get('recipient', None)
+		recipient = message['recipient']
 		try:
 			user, domain = recipient.split('@')
 		except ValueError:

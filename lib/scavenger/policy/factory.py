@@ -89,6 +89,11 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 				if self.debug: log.msg('plugin %-15s does not match (%s:%s)' % (plugin.getName(),protocol,state))
 	
 	def policeMessage (self,message):
+		# Perform database storage functions
+		for plugin in self.getPlugins(message):
+			plugin.update(message)
+
+		# Run all the plugin in order and act depending on the response returned
 		for plugin in self.getPlugins(message):
 			if self.debug: log.msg('running pluging ' + plugin.getName())
 

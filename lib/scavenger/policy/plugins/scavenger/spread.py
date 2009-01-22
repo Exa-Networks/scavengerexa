@@ -93,11 +93,11 @@ class Spread (ScavengerPlugin):
 		return ['postgresql','sqlite3','mysql']
 
 	def requiredAttributes (self):
-		return ['protocol_state','client_address','spread']
+		return ['client_address','server_address','spread']
 
-	def check (self, message):
-		state = message.get('protocol_state','').lower()
+	def update (self, message):
 		client = message['client_address']
+		client = message['server_address']
 		spread = message['spread']
 		
 		if not self.database.increment(client,server,spread):
@@ -106,8 +106,11 @@ class Spread (ScavengerPlugin):
 			except self.database.api2.IntegrityError:
 				pass
 			finally:
-				self.database.increment(client,server,state,code)
+				self.database.increment(client,server)
 		
+	def check (self, message):
+		client = message['client_address']
+
 		if self.max_spread:
 			r = self.database.nb_spread(client)
 			if r is None:
