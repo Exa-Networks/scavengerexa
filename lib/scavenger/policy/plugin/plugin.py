@@ -90,6 +90,7 @@ class PluginDatabase (object):
 	# XXX: we should check if the db (or api) we use is threadsafe to not always lock
 	def __init__(self, pool):
 		self.pool = pool
+		self.api = pool.api
 		self.api2 = pool.api2
 		self._errors = []
 
