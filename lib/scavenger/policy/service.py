@@ -113,7 +113,7 @@ class MailPolicyService (service.Service):
 	def cleanupPlugins(self):
 		for name, plugin in self.plugins.iteritems():
 			try:
-				reactor.callLater(plugin.cleanup_interval, plugin._cleanup)
+				plugin.periodic_cleanup()
 			except:
 				log.msg('error while trying to cleanup plugin ' + name)
 

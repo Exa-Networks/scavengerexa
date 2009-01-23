@@ -88,11 +88,42 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 			else:
 				if self.debug: log.msg('plugin %-15s does not match (%s:%s)' % (plugin.getName(),protocol,state))
 	
+
 	def policeMessage (self,message):
+		self._storeMessage(message)
+		return self._checkMessage(message)
+
+	def _storeMessage (self,message):
 		# Perform database storage functions
 		for plugin in self.getPlugins(message):
-			plugin.update(message)
+			try:
+				plugin.store(message)
 
+			# Errors
+
+			except response.InternalError,r:
+				log.msg('plugin %s : %s (%s)' % (plugin.getName(),'plugin had an internal error',str(r)))
+				continue
+			except response.DataError,r:
+				log.msg('plugin %s : %s (%s)' % (plugin.getName(),'the plugin does not like the data provided',str(r)))
+				continue
+			except response.UncheckableError,r:
+				log.msg('plugin %s : %s (%s)' % (plugin.getName(),'uncheckable',str(r)))
+				continue
+			except response.NoResponseError, r:
+				log.msg('plugin %s : %s (%s)' % (plugin.getName(),'no answer from the plugin',str(r)))
+				continue
+
+			# Uncaught Exception
+
+			except response.PluginError,r:
+				log.msg('plugin %s : %s' % (plugin.getName(),'no reponse'))
+				continue
+			except Exception, r:
+				log.msg('plugin %s : %s' % (plugin.getName(),'unknown response '+str(r)))
+				continue
+
+	def _checkMessage (self,message):
 		# Run all the plugin in order and act depending on the response returned
 		for plugin in self.getPlugins(message):
 			if self.debug: log.msg('running pluging ' + plugin.getName())

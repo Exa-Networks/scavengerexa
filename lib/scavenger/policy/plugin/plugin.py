@@ -260,42 +260,45 @@ class _SpamPlugin (object):
 
 	def validateAttributes (self,message):
 		return True
-	
-	def police (self,message):
-		# XXX: the way the plugin is called, it can not ever fail (atm)
-		#if not message['protocol_state'] in self.getStates():
-		#	log.msg('plugin %s, state %s not in %s' % (self.name,state,str(self.getStates())))
-		#	return response.UncheckableError()
+
+	def store (self,message):
 		if not self._messageContains(message,self.requiredAttributes()):
 			return response.DataError('the message is missing needed attribute for the plugin')
 		if not self.validateAttributes(message):
 			return response.DataError('the message is values are invalid for the plugin')
-		return self._check(message)
 
-	def _check (self,message):
+		return self._wrap(self.update,message)
+
+	def police (self,message):
+		return self._wrap(self.check,message)
+
+	def _wrap (self,function,message):
 		if self.factory is not None:
-			return self._check_database(message)
-		return self._check_simple(message)
+			return self._wrap_database(function,message)
+		return self._wrap_simple(function,message)
 	
-	def _check_simple (self,message):
+	def _wrap_simple (self,function,message):
 		if self.threadSafe():
-			return self.check(message)
+			return function(message)
 		with self.lock:
-			return self.check(message)
+			return function(message)
 
-	def _check_database (self,message):
+	def _wrap_database (self,function,message):
 		try:
 			if self.threadSafe() and self.database.threadSafe():
-				return self.check(message)
+				return function(message)
 			with self.lock:
-				return self.check(message)
+				return function(message)
 		except self.database.api2.OperationalError, e:
 			return response.InternalError, e.message
 
-	def _cleanup(self):
+	def periodic_cleanup(self):
 		log.msg('calling cleanup for %s' % self.getName())
-		self.cleanup()
-		reactor.callLater(self.cleanup_interval, self._cleanup)
+		reactor.callLater(self.cleanup_interval, self.periodic_cleanup)
+		self._wrap(self._cleanup,None)
+
+	def _cleanup(self,_):
+		return self.cleanup()
 		
 	def update(self):
 		return
