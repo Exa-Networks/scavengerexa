@@ -60,7 +60,7 @@ class HeloDB (PluginDatabase):
 		query = "UPDATE %(table_helo)s SET count=count+1 WHERE client_address = %%s AND helo = %%s" %  tables
 		return self.insert(query,client,helo)
 
-	def nb_hello (self,client):
+	def nb_helo (self,client):
 		query ="""
 SELECT
 	count(*) as sum,
