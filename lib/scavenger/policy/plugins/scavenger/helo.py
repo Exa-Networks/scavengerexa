@@ -108,7 +108,7 @@ class Helo (ScavengerPlugin):
 
 	def update (self, message):
 		client = message['client_address']
-		client = message['server_address']
+		server = message['server_address']
 		helo = message['helo_name']
 		
 		if not self.database.increment(client,server,helo):
