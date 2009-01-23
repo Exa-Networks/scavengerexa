@@ -13,7 +13,7 @@ from twisted.python import log
 from twisted.protocols import basic
 
 class _MailPolicyProtocol(basic.LineReceiver):
-	debug = True
+	debug = False
 	errorReturn = {'error': ('dunno', None), 'connection': ('dunno', None)}
 	sanitise = {'protocol_state': lambda s: s.strip().upper()}
 	delimiter = '\n'
@@ -59,10 +59,9 @@ class _MailPolicyProtocol(basic.LineReceiver):
 			self.problem('problem with the policy message')
 			return
 			
-		#if self.debug:
-		#	log.msg("received:\n"+"\n".join(["%s:%s" % (k,v) for k,v in message.iteritems()]))
-		#else:
-		#	log.msg("received:\n"+"\n".join(["%s:%s" % (_k,_v) for _k,_v in [(k,v) for k,v in message.iteritems() if k in ('protocol_state','client_address','sender','recipient')]]))
+		if self.debug:
+			log.msg("received:\n"+"\n".join(["%s:%s" % (_k,_v) for _k,_v in [(k,v) for k,v in message.iteritems() if k in ('protocol_state','client_address','sender','recipient')]]))
+			#log.msg("received:\n"+"\n".join(["%s:%s" % (k,v) for k,v in message.iteritems()]))
 		
 		d = defer.Deferred()
 		d.addCallback(self.factory.policeMessage)
@@ -70,9 +69,6 @@ class _MailPolicyProtocol(basic.LineReceiver):
 
 		reactor.callInThread(d.callback, message)
 
-		# self.sendResponse(answer)
-
-	
 
 class PostfixPolicyProtocol(_MailPolicyProtocol):
 	def convert (self):
