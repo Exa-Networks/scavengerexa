@@ -26,10 +26,7 @@ class _MailPolicyProtocol(basic.LineReceiver):
 		self.transport.write(answer + '\n\n')
 		self.transport.loseConnection()
 	
-	def response_postfix(self,string):
-		self._answer('%s' % string)
-
-	def response_scavenger(self,string):
+	def response(self,string):
 		self._answer('%s' % string)
 
 	def problem (self,reason = ''):
@@ -73,36 +70,24 @@ class _MailPolicyProtocol(basic.LineReceiver):
 
 		reactor.callInThread(d.callback, message)
 
-	def sendResponse(self, answer):
-		if answer.type not in ['postfix','scavenger']:
-			# XXX: Should we overload the protocol creation factory to have this locally, or make it an API call ..
-			answer.type = self.factory.type
-		if answer.type == 'postfix':
-			self.sendPostfixResponse(answer)
-		if answer.type == 'scavenger':
-			self.sendScavengerResponse(answer)
+		# self.sendResponse(answer)
+
 	
-	def sendPostfixResponse (self,answer):
-		delay = int(answer.delay)
-		string = str(answer)
-
-		d = defer.Deferred()
-		d.addCallback(self.response_postfix)
-
-		reactor.callFromThread(lambda _args: reactor.callLater(delay, d.callback, _args), string)
-
-	def sendScavengerResponse (self,answer):
-		string = str(answer)
-
-		d = defer.Deferred()
-		d.addCallback(self.response_scavenger)
-
-		reactor.callFromThread(lambda _args: reactor.callLater(0, d.callback, _args), string)
-
 
 class PostfixPolicyProtocol(_MailPolicyProtocol):
 	def convert (self):
 		return self.action
+
+	def sendResponse (self,answer):
+		answer.type = self.factory.type
+
+		delay = int(answer.delay)
+		string = str(answer)
+
+		d = defer.Deferred()
+		d.addCallback(self.response)
+
+		reactor.callFromThread(lambda _args: reactor.callLater(delay, d.callback, _args), string)
 
 
 from scavenger.policy.message import PolicyMessageFactory
@@ -112,3 +97,13 @@ class ScavengerPolicyProtocol(_MailPolicyProtocol):
 
 	def convert (self):
 		return self._convert.fromCapture(self.action)
+
+	def sendResponse (self,answer):
+		answer.type = self.factory.type
+
+		string = str(answer)
+
+		d = defer.Deferred()
+		d.addCallback(self.response)
+
+		reactor.callFromThread(lambda _args: reactor.callLater(0, d.callback, _args), string)
