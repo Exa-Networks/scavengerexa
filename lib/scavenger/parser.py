@@ -8,7 +8,7 @@ Copyright (c) 2008 Exa Networks. All rights reserved.
 See LICENSE for details.
 """
 
-from scavenger.message import FactoryError
+from scavenger.message import Message, FactoryError
 
 class Parser (object):
 	def __init__ (self,factory=None,debug=False):
@@ -16,7 +16,7 @@ class Parser (object):
 		self._factory = factory
 
 	def parse (self,data):
-		message = {}
+		message = Message()
 		valid = False
 		for line in data.split('\n'):
 			line = line.strip()
