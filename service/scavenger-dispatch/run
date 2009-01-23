@@ -28,6 +28,7 @@ six_hours=`echo "6 60 60 **p" | dc`
 exec \
 	env \
 		debug="1" \
+		validate='false' \
 		policy="127.0.0.1:25253" \
 		filter="82.219.2.81" \
 		action="82.219.0.0/16>127.0.0.1:25254" \

@@ -14,7 +14,7 @@ from scavenger.option import Option as BaseOption, OptionError
 from scavenger.tools.ip import tostartend
 
 class Option (BaseOption):
-	valid = ['debug','slow','policy','filter','action','time']
+	valid = ['debug','slow','policy','filter','action','time','validate']
 
 	def _policy (self):
 		# get where to send the information gathered
@@ -52,6 +52,15 @@ class Option (BaseOption):
 		except ValueError:
 			raise OptionError('please setup how long should new spam from a IP should be ignore after first detection')
 
+	def _validate (self):
+		validate = self._env('validate').lower()
+		if validate in ['','true']:
+			self['validate'] = True
+		elif validate.isdigit():
+			self['validate'] = not not validate
+		else:
+			self['validate'] = False
+
 try:
 	option = Option()
 except OptionError,e:
@@ -76,7 +85,7 @@ if debug_option:
 
 from scavenger.dispatch.server import DispatchFactory
 
-factory = DispatchFactory(option.policy,option.filter,option.action,option.time)
+factory = DispatchFactory(option.policy,option.filter,option.action,option.time,option.validate)
 
 from twisted.internet import reactor
 

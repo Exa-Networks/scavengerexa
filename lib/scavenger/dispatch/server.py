@@ -23,7 +23,10 @@ class DispatchProtocol(DatagramProtocol):
 	debug = True
 
 	def startProtocol(self):
-		self._parser = Parser(CaptureMessageFactory())
+		if self.factory.validateUDP():
+			self._parser = Parser(CaptureMessageFactory())
+		else:
+			self._parser = Parser()
 		self._id = 0
 	
 	def datagramReceived(self, data, (host, port)):
@@ -67,11 +70,15 @@ from twisted.internet.protocol import ServerFactory
 class DispatchFactory(ServerFactory):
 	protocol = DispatchProtocol
 
-	def __init__ (self,policies,filters,action,time):
+	def __init__ (self,policies,filters,action,time,validate):
 		self._policies = policies
 		self._filters = filters
 		self._cache = Cache(time)
 		self._action = action
+		self._validate = validate
+
+	def validateUDP (self):
+		return self._validate
 
 	def getPolicy (self,address):
 		return source_hash(address,self._policies)
