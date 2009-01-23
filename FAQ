@@ -1,5 +1,5 @@
-Q: Why is it called scavenger ?
-A: As it is a carnivore[1] which eats your network Junk[2]
+Q: Why is it called scavengerEXA ?
+A: As it is a carnivore[1] which eats your network Junk[2] done by Exa Networks
 
 Q: What are the depencies for this program
 A: Python, tested with version 2.5.2[3]
@@ -11,15 +11,15 @@ A: optional for policy, python memcached (memcache)[9][10] (not yet used)
 A: optional or action-netfilter, python netfilter[11]
 A: optional djb daemontools [12]
 
-Q: What licence is the code release under ?
+Q: What licence is the code released under ?
 A: This code is released under the affero GPL licence v 3.0[13]
 A: Please not that this is the 3.0 only and not any later version
 A: (The author has not checked yet possible licence incompatibility issues)
 
 Q: Who hold the copyright for the code ?
 A: Thomas Mangin wrote most of the code whilst working for Exa Networks[14]
-A: his collegue David Farrar did provide a large among of not necessary
-A: correctly expressed in the later added copyright note
+A: His collegue David Farrar provided a large amount of help not necessarily
+A: correctly expressed in the copyright note added later.
 
 Q: Can I contribute ?
 A: Sure, send us patches or idea.
