@@ -65,6 +65,10 @@ class Connection:
 		self.kw=kw
 		self._connect()
 	
+	def __del__ (self):
+		# need to explicitely delete it from pool
+		pass
+	
 	def _connect (self):
 		with self.lock:
 			self._connection = self.api2.connect(*self.args, **self.kw)
