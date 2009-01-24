@@ -1,0 +1,1 @@
+see if we can improve perf preventing Message() creation and deletion by recycling existing existing objects

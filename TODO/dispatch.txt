@@ -1,1 +1,0 @@
-add an option to remove the validation of the message to improve performance
