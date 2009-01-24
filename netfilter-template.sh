@@ -52,7 +52,7 @@ MTA=10.0.0.0:25
 /sbin/iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 
 # opened ports (local machine) by default open ssh
-/sbin/iptables -A INPUT -p tcp -s --dport 22 -j ACCEPT
+/sbin/iptables -A INPUT -p tcp --dport 22 -j ACCEPT
 
 # exmple of suspended outbound smtp
 for i in 127.0.0.2 127.0.0.3; do
