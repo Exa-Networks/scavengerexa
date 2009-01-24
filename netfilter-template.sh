@@ -41,9 +41,9 @@ MTA=10.0.0.0:25
 
 # drop reserved addresses incoming
 /sbin/iptables -A INPUT -s 127.0.0.0/8 -j DUMP
-/sbin/iptables -A INPUT -s 192.168.0.0/16 -j DUMP
-/sbin/iptables -A INPUT -s 172.16.0.0/12 -j DUMP
-/sbin/iptables -A INPUT -s 10.0.0.0/8 -j DUMP
+#/sbin/iptables -A INPUT -s 192.168.0.0/16 -j DUMP
+#/sbin/iptables -A INPUT -s 172.16.0.0/12 -j DUMP
+#/sbin/iptables -A INPUT -s 10.0.0.0/8 -j DUMP
 
 # allow certain inbound ICMP types
 /sbin/iptables -A INPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
