@@ -11,7 +11,7 @@ export PATH
 case "$1" in
   start)
     echo -n "Starting service services: svscan"
-    cd /service
+    cd /opt/scavenger/service
     env - PATH="$PATH" svscan &
     echo $! > /var/run/service-svscan.pid
     touch /var/lock/subsys/service
@@ -21,33 +21,33 @@ case "$1" in
     echo -n "Stopping service services: svscan"
     kill `cat /var/run/service-svscan.pid`
     echo -n " service"
-    svc -dx /service/*
+    svc -dx /opt/scavenger/service/*
     echo -n " logging"
-    svc -dx /service/*/log
+    svc -dx /opt/scavenger/service/*/log
     echo "."
     rm -rf /var/run/service-svscan.pid
     rm -rf /var/lock/subsys/service
     ;;
   stat)
-    cd /service
+    cd /opt/scavenger/service
     svstat * */log
     ;;
   reload|hup)
     echo "Sending HUP signal to service services."
-    svc -h /service/*
+    svc -h /opt/scavenger/service/*
     ;;
   pause)
     echo "Pausing service services"
-    svc -p /service/*
+    svc -p /opt/scavenger/service/*
     ;;
   cont)
     echo "Continuing service services"
-    svc -c /service/*
+    svc -c /opt/scavenger/service/*
     ;;
   restart)
     echo "Restarting service services:"
-    svc -d /service/*
-    svc -u /service/*
+    svc -d /opt/scavenger/service/*
+    svc -u /opt/scavenger/service/*
     ;;
   help)
     cat <<HELP
