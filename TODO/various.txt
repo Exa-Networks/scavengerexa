@@ -1,4 +1,8 @@
-Replace the builtin dictionary cache for python memcached[1] if the current implementation causes scalability/stability issue on high load
-The factory are used to validate data once parsed, have some more strict, specific function for that.
-Make sure that any exa specific code is optional : dependancy on vmailmgr code and vproxy code
-self._factory is not clear as a variable name, found one more appropriate
+Replace the builtin dictionary cache for python memcached[1] if the current implementation causes scalability/stability issue on high load (I do not think it will tho)
+
+Make sure that any exa specific code is optional : dependancy on vmailmgr code and vproxy code (disabling it seems logical as it is very EXA specific).
+
+self._factory is not clear as a variable name, found one more appropriate for each factory and perform some search and replace.
+
+action: add an action aware RBL server implementation (see if we could work with spamhauss to have ISPs sharing their detected bots)
+

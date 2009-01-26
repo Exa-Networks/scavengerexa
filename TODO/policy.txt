@@ -1,8 +1,8 @@
-currently the HOLD/FILTER switch is determined by the type of exception we raise.
-Replace this with a generic return type and have the type of return be in the configuration file.
+pluging: track entering POP/IMAP connection to estimate the volume of mail an IP should send.  track entering SMTP connection for mail server for the same volume estimation.
 
-The 'normal' postfix policy daemon is totally broken since the change of the internal API
-writting of intelligent anti-spam rules based on http://spamhints.org/
+currently the HOLD/FILTER switch is determined by the type of exception we raise. Replace this with a generic return type and have the type of return be in the configuration file.
+
+The 'normal' postfix policy daemon is totally broken since the change of the internal API. Fix the plugins to use the new API.
 
 There is a bug when you request more connection that the connection pool has.
 It seems that the threading can cause somehow a deadlock (or was causing)
