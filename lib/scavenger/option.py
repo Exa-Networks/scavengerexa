@@ -8,7 +8,11 @@ Copyright (c) 2008 Exa Networks. All rights reserved.
 See LICENSE for details.
 """
 
+from __future__ import with_statement
+
 import os
+import sys
+import optparse
 import socket
 
 class OptionError (Exception): pass
@@ -17,6 +21,76 @@ class OptionError (Exception): pass
 class Option (dict):
 	valid = ['debug','display']
 
+	def __init__ (self,folder='',options=()):
+		dict.__init__(self)
+		
+		self.etc = os.environ.get('ETC','/etc')
+		self.cache = os.environ.get('CACHE','/var/cache')
+		
+		self.__path = os.path.join(self.etc,folder)
+		
+		if folder:
+			# the self.options keys
+			if self.__keys == ():
+				self.__keys = lambda: self.__files()
+			else:
+				self.__keys = lambda: [option for option in options]
+		else:
+			if len(options):
+				self.__keys = lambda: set(options)
+			else:
+				self.__keys = lambda: self.valid
+		self.options = {}
+		
+		self.__reload()
+		
+	def __files (self):
+		# XXX: should really use glob.glob for that.
+		for walk in os.walk(self.__path):
+			for f in walk[2]:
+				if f[0] != '.' and f[-1] != '~':
+					yield f
+			break
+	
+	def __reload(self):
+		self.clear()
+		
+		options = self.__keys()
+
+		for option in options:
+			if not option.lower() in self.valid:
+				raise OptionError('unknown configuration name %s' % option)
+
+		parser = optparse.OptionParser()
+		for option in options:
+			parser.add_option('','--%s' % option,action="store",type="str")
+		opts,_ = parser.parse_args()
+		
+		for option in options:
+			if getattr(opts,option) != None:
+				self.options[option.lower()] = getattr(opts,option)
+				continue
+			if os.environ.has_key(option):
+				value = os.environ.get(option)
+				value.strip()
+				self.options[option.lower()] = value
+				continue
+			if  os.path.isfile(option):
+				lines = []
+				with open(option,'r') as reader:
+					for line in reader.readlines():
+						line = line.strip()
+						if line == '' or line[0] == '#':
+							continue
+						lines.append(line)
+					self.options[option.lower()] = ' '.join(lines)
+					continue
+			raise OptionError('no value for configuration name %s' % option)
+		
+		for option in options:
+			func = getattr(self,'_%s' % option)
+			func()
+	
 	def __getattribute__ (self, key):
 		try:
 			return dict.__getattribute__(self,key)
@@ -27,25 +101,11 @@ class Option (dict):
 		except KeyError,e:
 			raise AttributeError(str(e))
 
-	def _env (self,value):
-		return os.environ.get(value.lower(),os.environ.get(value.upper(),''))
+	def _env (self,key):
+		return self.options.get(key.lower(),'')
 
-	def _has (self,value):
-		return os.environ.has_key(value.lower()) or os.environ.has_key(value.upper())
-
-	def __init__ (self,*options):
-		dict.__init__(self)
-
-		if not len(options):
-			options = self.valid
-
-		for option in options:
-			if not option in self.valid:
-				raise OptionError('unknown configuration name %s' % option)
-
-		for option in options:
-			func = getattr(self,'_%s' % option)
-			func()
+	def _has (self,key):
+		return self.options.has_key(key.lower())
 
 	def _debug (self):
 		# debug level
