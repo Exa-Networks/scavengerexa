@@ -1,0 +1,3 @@
+# The mail server to use as smarthost to send the email notification
+
+smtp.exa-networks.co.uk

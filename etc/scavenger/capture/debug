@@ -1,0 +1,8 @@
+# debug level for the program (add the debug option wished)
+# debug option : 1  (shows the value of the options at startup)
+# debug parser : 2  (shows the working of the mail parser)
+# debug cache  : 4  (shows the working and expiring of the in-memory cache) 
+# debug udp    : 8  (shows the UDP message sent to the dispatcher)
+# debug wire   : 16 (shows the ip:port -> ip:port conversation for mail)
+
+1

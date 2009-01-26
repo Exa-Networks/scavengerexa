@@ -44,6 +44,8 @@ class Option (BaseOption):
 			if int(port) >= 65536:
 				raise OptionError('port is too big %s' % port)
 
+	# Those are options but should not be changed unless you really know what you are doing ...
+
 	def _table (self):
 		self['table'] = self._env('table')
 		if not self['table']:

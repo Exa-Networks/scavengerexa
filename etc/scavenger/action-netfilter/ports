@@ -1,0 +1,5 @@
+# This file contains a list of ports with one entry per line (or one line separated with whitespace)
+# Those are the port which will be transproxied when spam is detected
+
+25
+587

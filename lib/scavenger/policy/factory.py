@@ -91,7 +91,9 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 
 	def policeMessage (self,message):
 		self._storeMessage(message)
-		return self._checkMessage(message)
+		response = self._checkMessage(message)
+		print "%-15s %4s : %s" % (message['client_address'],message['protocol_state'],str(response))
+		return response
 
 	def _storeMessage (self,message):
 		# Perform database storage functions
@@ -192,7 +194,7 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 				continue
 
 		if self.debug: log.msg('plugins could not say anything about this message')
-		return response.ResponseUndetermined()
+		return response.ResponseUndetermined(self.type)
 
 	def sanitiseMessage (self,message):
 		r = {}

@@ -22,7 +22,6 @@ class _MailPolicyProtocol(basic.LineReceiver):
 		self.action = {}
 	
 	def _answer (self,answer):
-		log.msg('%s' % answer.strip())
 		self.transport.write(answer + '\n\n')
 		self.transport.loseConnection()
 	
@@ -75,8 +74,6 @@ class PostfixPolicyProtocol(_MailPolicyProtocol):
 		return self.action
 
 	def sendResponse (self,answer):
-		answer.type = self.factory.type
-
 		delay = int(answer.delay)
 		string = str(answer)
 
@@ -95,8 +92,6 @@ class ScavengerPolicyProtocol(_MailPolicyProtocol):
 		return self._convert.fromCapture(self.action)
 
 	def sendResponse (self,answer):
-		answer.type = self.factory.type
-
 		string = str(answer)
 
 		d = defer.Deferred()

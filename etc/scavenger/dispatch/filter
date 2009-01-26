@@ -1,0 +1,4 @@
+# This file contains a list of IP addresses with one entry per line (or one line separated with whitespace)
+# Those IP are of the machine you intend to redicted spammers connection to
+# All mail conversion to this IP will be ignored by the dispatcher and will not sent to the policy server
+82.219.2.81

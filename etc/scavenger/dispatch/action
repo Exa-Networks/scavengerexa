@@ -1,0 +1,6 @@
+# This file list all the action servers which are going be be used depending on the client source IP
+# with one entry per line (or one line separated with whitespace)
+# Each line has the format network/cidr>ip:port
+# the netmask must be express in bit size form (/0 to /32)
+
+82.219.0.0/16>127.0.0.1:25254

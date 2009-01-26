@@ -1,3 +1,7 @@
+rename to 'slow' option to something clearer (can be said of a lot of option name)
+the action programs have a 'port setting' it should be a 'listen with IP and port'
+action-netfilter use MTA for the filtering (port:ip) when discard has a different format, make then the same
+
 Replace the builtin dictionary cache for python memcached[1] if the current implementation causes scalability/stability issue on high load (I do not think it will tho)
 
 Make sure that any exa specific code is optional : dependancy on vmailmgr code and vproxy code (disabling it seems logical as it is very EXA specific).

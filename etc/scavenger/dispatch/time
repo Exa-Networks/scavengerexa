@@ -1,0 +1,5 @@
+# This is the time in second the dispatcher will ignore connections from an IP once the IP has been found as spamming.
+# This is here to prevent overloading the policy server should a spammer send a lot of mail and not transparent filtering
+# is performed on portt 25 once a spammer is found
+
+21600

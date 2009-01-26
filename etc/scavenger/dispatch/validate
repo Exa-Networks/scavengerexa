@@ -1,0 +1,5 @@
+# Should you accept connection from untrusted sources, you may want to validate the content of the UDP
+# message received before sending them to the policy server, by default no validation is performed
+# (value: true or false)
+
+false

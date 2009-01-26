@@ -1,0 +1,3 @@
+# The location of the sqlite3 for persistant storage of the blocked IPs
+
+/opt/scavenger/db/action_netfilter

@@ -1,3 +1,5 @@
+Have a optional validation of the message exactly as we do for the dispatch program
+
 pluging: track entering POP/IMAP connection to estimate the volume of mail an IP should send.  track entering SMTP connection for mail server for the same volume estimation.
 
 currently the HOLD/FILTER switch is determined by the type of exception we raise. Replace this with a generic return type and have the type of return be in the configuration file.

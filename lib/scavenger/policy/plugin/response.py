@@ -95,6 +95,9 @@ class ResponseUndetermined (PluginResponse):
 	delay = 0
 	duration = 0
 
+	def __init__ (self,type):
+		self.type = type
+
 	def __str__ (self):
 		if self.type == 'scavenger':
 			return 'HAM'

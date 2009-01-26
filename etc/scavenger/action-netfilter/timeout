@@ -1,0 +1,3 @@
+# How long will the server wait for data on the port before closing the connection
+
+60
