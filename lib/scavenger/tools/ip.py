@@ -157,7 +157,7 @@ def send_udp (diffusion,address,servers,message):
 			_next[key] = next_server(servers)
 		server = _next[key].next()
 		sock.sendto(p,server)
-	elif diffusion == 'sr':
+	elif diffusion == 'sh':
 		server = source_hash(address,servers)
 		server = servers[hash]
 		sock.sendto(p,server)
