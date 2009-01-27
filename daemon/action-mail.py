@@ -10,29 +10,29 @@ See LICENSE for details.
 
 from __future__ import with_statement
 
-# Option
-
+import os
 import sys
-import socket
-import smtplib
+
+# Enabling (or not) psycho
+
+try:
+	import psyco
+	psyco.full()
+	print 'Psyco found and enabled'
+except ImportError:
+	print 'Psyco is not available'
+
+# Options
 
 from scavenger.action.option import Option,OptionError
 
 try:
-        option = Option('debug','slow','port','smarthost','sender','recipient','timeout')
+        option = Option(os.path.join('scavenger','action-mail'), ('debug','port','smarthost','sender','recipient','timeout')).option
 except OptionError, e:
         print str(e)
         sys.exit(1)
 
-# Enabling (or not) psycho
-
-if not option['slow']:
-	try:
-		import psyco
-		psyco.full()
-		print 'Psyco found and enabled'
-	except ImportError:
-		print 'Psyco is not available'
+# Debugging
 
 debug_option = not not option.debug & 1
 debug_sending = not not option.debug & 2
@@ -44,6 +44,8 @@ if debug_option:
 	print "debug protocol ", debug_protocol
 	print "+"*80
 
+import socket
+import smtplib
 from scavenger.action.protocol import ActionProtocol
 
 class MailProtocol (ActionProtocol):

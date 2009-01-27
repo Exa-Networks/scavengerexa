@@ -94,11 +94,7 @@ def toipn (ips):
 	a,b,c,d = ips.split('.')
 	return (int(a) << 24) + (int(b) << 16) + (int(c) << 8) + int(d)
 
-def tostartend (cidr):
-	if not cidr.count('/'):
-		cidr+='/32'
-	ip,mask = cidr.split('/')
-
+def tostartend ((ip,mask)):
 	if ip.count(':'):
 		raise ValueError('only IPv4 is currently supported')
 

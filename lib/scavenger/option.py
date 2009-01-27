@@ -14,174 +14,224 @@ import os
 import sys
 import optparse
 import socket
+from scavenger.tools.ip import toipn
 
 class OptionError (Exception): pass
 
+# add a assign ?? function to use in all the place where self[...] =  is used
 
-class Option (dict):
-	valid = ['debug','display']
-
-	def __init__ (self,folder='',options=()):
-		dict.__init__(self)
-		
-		self.etc = os.environ.get('ETC','/etc')
-		self.cache = os.environ.get('CACHE','/var/cache')
-		
-		self.__path = os.path.join(self.etc,folder)
-		
-		if folder:
-			# the self.options keys
-			if self.__keys == ():
-				self.__keys = lambda: self.__files()
-			else:
-				self.__keys = lambda: [option for option in options]
-		else:
-			if len(options):
-				self.__keys = lambda: set(options)
-			else:
-				self.__keys = lambda: self.valid
-		self.options = {}
-		
-		self.__reload()
-		
-	def __files (self):
-		# XXX: should really use glob.glob for that.
-		for walk in os.walk(self.__path):
-			for f in walk[2]:
-				if f[0] != '.' and f[-1] != '~':
-					yield f
-			break
-	
-	def __reload(self):
-		self.clear()
-		
-		options = self.__keys()
-
-		for option in options:
-			if not option.lower() in self.valid:
-				raise OptionError('unknown configuration name %s' % option)
-
-		parser = optparse.OptionParser()
-		for option in options:
-			parser.add_option('','--%s' % option,action="store",type="str")
-		opts,_ = parser.parse_args()
-		
-		for option in options:
-			if getattr(opts,option) != None:
-				self.options[option.lower()] = getattr(opts,option)
-				continue
-			if os.environ.has_key(option):
-				value = os.environ.get(option)
-				value.strip()
-				self.options[option.lower()] = value
-				continue
-			if  os.path.isfile(option):
-				lines = []
-				with open(option,'r') as reader:
-					for line in reader.readlines():
-						line = line.strip()
-						if line == '' or line[0] == '#':
-							continue
-						lines.append(line)
-					self.options[option.lower()] = ' '.join(lines)
-					continue
-			raise OptionError('no value for configuration name %s' % option)
-		
-		for option in options:
-			func = getattr(self,'_%s' % option)
-			func()
-	
+class _Option (dict):
 	def __getattribute__ (self, key):
 		try:
 			return dict.__getattribute__(self,key)
 		except AttributeError:
 			pass
 		try:
-			return dict.__getitem__(self, key)
+			return dict.__getitem__(self,key)
 		except KeyError,e:
 			raise AttributeError(str(e))
 
-	def _env (self,key):
-		return self.options.get(key.lower(),'')
-
-	def _has (self,key):
-		return self.options.has_key(key.lower())
-
-	def _debug (self):
-		# debug level
-		if self._has('debug'):
-			debug = self._env('debug')
-			if debug.isdigit():
-				self['debug'] = int(debug)
-			else:
-				self['debug'] = 1
-		else:
-			self['debug'] = 0
-
 	def display (self):
 		print "*"*80
-		for option in self.valid:
-			if self.has_key(option):
-				print "%-20s : %s" %(option, self[option])
+		for option in self.keys():
+			print "%-20s : %s" %(option, self[option])
 		print "*"*80
 
-	def _slow (self):
-		self['slow'] = self._has('slow')
- 		self['slow'] = self._has('slow')
-		if self['slow']:
-			self['slow'] = not not self['slow']
-			 
-	def _diffusion (self):
-		self['diffusion'] = self._env('diffusion')
-		if not self['diffusion']:
-			raise OptionError('diffusion method is not set (one: do not balance traffic, rr: roundrobin between sources, sh: sourcehash sender, all: send a copy to every server)')
-		if self['diffusion'] not in ['none','rr','sh','all']:
-			raise OptionError('diffusion method is not set (one: no balancing, rr: roundrobin, sh: sourcehash, all: every destination)')
+class Option (object):
+	valid = ['debug',]
 
+	def __init__ (self,folder='',options=()):
+		self.etc = os.environ.get('ETC','/etc')
+		self.cache = os.environ.get('CACHE','/var/cache')
+		
+		self.__path = os.path.join(self.etc,folder)
+		self.__folder = folder 
+		self.__options = set(options) if len(options) else self.valid
+	
+		self.raw = {}
+		self.option = _Option()
 
-	def _validate_service (self,service):
-		if not service.count(':'):
-			raise OptionError('a service should be defined as host:port')
-		host,port = service.split(':')
-		try:
-			ip = socket.gethostbyname(host)
-		except socket.gaierror:
-			raise OptionError ('could not resolve hostname %s' % host)
-		try:
-			port = int(port)
-		except ValueError:
-			raise OptionError('the port must be an integer, not a service name')
-		return (ip,port)
+		self.__reload()
 
-	def _validate_cidr (self,cidr):
-		if not cidr.count('/'):
-			cidr+='/32'
-		ip,mask = cidr.split('/')
+	def __reload(self):
+		self.raw.clear()
+		self.option.clear()
+		
+		parser = optparse.OptionParser()
+		for option in self.__options:
+			parser.add_option('','--%s' % option,action="store",type="str")
+		opts,_ = parser.parse_args()
+		
+		for option in self.__options:
+			if getattr(opts,option) != None:
+				self.raw[option.lower()] = getattr(opts,option)
+				continue
+			if os.environ.has_key(option):
+				value = os.environ.get(option)
+				value.strip()
+				self.raw[option.lower()] = value
+				continue
+			fname = os.path.join(self.__path,option)
+			if os.path.isfile(fname):
+				lines = []
+				with open(fname,'r') as reader:
+					for line in reader.readlines():
+						line = line.strip()
+						if line == '' or line[0] == '#':
+							continue
+						lines.append(line)
+				self.raw[option.lower()] = ' '.join(lines)
+				continue
+			self.raw[option.lower()] = None
+		
+		for option in self.__options:
+			func = getattr(self,'option_%s' % option)
+			func()
+	
+	def get (self,key):
+		return self.raw.get(key.lower(),'')
+
+	def list (self,key):
+		self._set(key,self._list(key))
+
+	def _list (self,key):
+		return [value for value in self.get(key).split(' ') if value]
+
+	def has (self,key):
+		return self.raw.has_key(key.lower())
+
+	def set (self,key):
+		self._set(key,self.get(key))
+
+	def _set (self,key,value):
+		self.option[key] = value
+
+	def boolean (self,name):
+		self._set(name,self._boolean(name,self.get(name)))
+
+	def _boolean (self,name,value):
+		if value.lower() in ['true','yes']:
+			return True
+		if value.lower() in ['false','no']:
+			return False
+		if value.isdigit():
+			return not not value
+		raise OptionError('option %s the parameter is not a boolean' % name)
+	
+	def number (self,name,low=None,high=None):
+		self._set(name,self._number(name,self.get(name),low,high))
+
+	def _number (self,name,value,low=None,high=None):
+		if not value.isdigit():
+			raise OptionError('option %s is not an number' % name)
+		value = long(value)
+		if low is not None and value < low:
+			raise OptionError('option %s is too low (value %d < %d)' % (name,value,low))
+		if high is not None and value > high:
+			raise OptionError('option %s is too high (value %d > %d)' % (name,value,high))
+		return int(value)
+	
+	def ip (self,name):
+		self._set(name,self._ip(self.get(name)))
+
+	def _ip (self,name,ip):
 		if ip.count(':'):
-			raise OptionError('only IPv4 is currently supported')
+			raise OptionError('option %s only IPv4 addresses are currently supported' % name)
 		if ip.count('.') != 3:
-			raise OptionError('invalid IP address within CIDR %s' % cidr)
+			raise OptionError('option %s invalid IP address %s' % (name,ip))
 		try:
-			start = 0
+			ipn = 0
 			for c in [int(c) for c in ip.split('.')]:
-				start <<= 8
-				start += c
+				ipn <<= 8
+				ipn += c
 		except ValueError:
-			raise OptionError('invalid IP address within CIDR %s' % cidr)
+			raise OptionError('option %s invalid IP address within CIDR %s' % (name,cidr))
+		return ip
+
+	def host (self,name,ip):
+		self._set(name,self._host(name,self.get(name)))
+
+	def _host (self,name,ip):
+		try:
+			ip = self.ip(name,ip)
+		except OptionError:
+			try:
+				ip = self.ip(name,socket.gethostbyname(host))
+			except socket.gaierror:
+				raise OptionError ('option %s could not resolve hostname %s' % (name,host))
+		return ip
+
+	def port (self,name):
+		self._set(name,self._port(name,self.get(name)))
+
+	def _port (self,name,port):
+		return self._number(name,port,low=0,high=2**16-1)
+
+	def netmask (self,name,mask):
+		self._set(name,self._netmask(self.get(name)))
+
+	def _netmask (self,name,mask):
 		try:
 			mask = int(mask)
 		except ValueError:
-			raise OptionError('the netmask must be an integer not %s' % mask)
-
+			raise OptionError('option %s the netmask must be an number not %s' % (name,mask))
 		if mask < 0 or mask > 32:
-			raise OptionError('the netmask is invalid %d' % mask)
+			raise OptionError('option %s the netmask is invalid %d' % (name,mask))
+		return int(mask)
+
+	def cidr (self,name):
+		self._set(name,self._cidr(name,self.get(name)))
+
+	def _cidr (self,name,cidr):
+		if not cidr.count('/'):
+			cidr+='/32'
+		if cidr.count('/') != 1:
+			raise OptionError('option %s a cidr is in the form ip/mask' % name)
+		ip,mask = cidr.split('/',1)
+		
+		ip = self._ip("%s ip"%name,ip)
+		ipn = toipn(ip)
+		mask = self._netmask("%s mask"%name,mask)
 
 		s = pow(2,32-mask)
+		if int(ipn/s) * s != ipn:
+			raise OptionError('option %s invalid netmask boundary' % name)
 
-		if int(start/s) * s != start:
-			raise OptionError('invalid netmask boundary')
+		return (ip,mask)
 
-		return cidr
+	def service (self,name):
+		self._set(name,self._service(name,self.get(name)))
+
+	def _service (self,name,service):
+		if service.count(':') != 1:
+			raise OptionError('option %s a service is in the form ip:port' % name)
+		host,port = service.split(':',1)
+		ip = self._ip("%s host"%name,host)
+		port = self._port("%s port"%name,port)
+		return (ip,port)
+
+	def enum (self,name,values):
+		self._set(name,self._enum(name,self.get(name),values))
+
+	def _enum (self,name,value,values):
+		if not value in values:
+			raise OptionError('option %s value %s is not a valid choice %s' % (name,value,str(values)))
+		return value
+
+	def url (self,name):
+		self._set(name,self._url(name,self.get(name),values))
+
+	def _url (self,name,url):
+		if not url.startswith('http://') and not url.startswith('https://'):
+			raise OptionError('option %s url need to starts with http[s]://' % name)
+		return url
+
+	def option_debug (self):
+		if self.has('debug'):
+			self.number('debug',low=0)
+		else:
+			self._set('debug',0)
+
 
 if __name__ == '__main__':
 	 option = Option().display()

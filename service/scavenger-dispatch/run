@@ -23,15 +23,6 @@ cd /opt/scavenger/daemon
 #	strace -vfF -o ./strace.txt \
 #	/usr/bin/softlimit -m 15000000 \
 
-six_hours=`echo "6 60 60 **p" | dc`
-
 exec \
-	env \
-		debug="1" \
-		validate='false' \
-		policy="127.0.0.1:25253" \
-		filter="82.219.2.81" \
-		action="82.219.0.0/16>127.0.0.1:25254" \
-		time="$six_hours" \
 	$PYTHON dispatch.py \
 2>&1

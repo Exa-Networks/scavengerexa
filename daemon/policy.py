@@ -13,6 +13,15 @@ from __future__ import with_statement
 import os
 import sys
 
+# Enabling (or not) psycho
+
+try:
+	import psyco
+	psyco.full()
+	print 'Psyco found and enabled'
+except ImportError:
+	print 'Psyco is not available'
+
 # Intialise Logging
 
 from twisted.python import log
@@ -21,39 +30,32 @@ try:
 except:
 	print 'could not initialise twisted logging'
 
+# Options
+
 from scavenger.option import Option as BaseOption, OptionError
 
 class Option (BaseOption):
-	valid = ('debug','slow','configuration')
+	valid = ('debug','configuration')
 
-	def _configuration (self):
-		conf = self._env('configuration')
-		if conf.endswith('.conf'):
-			self['configuration'] = conf
+	def option_configuration (self):
+		if self.has('configuration'):
+			self.set('configuration')
 		else:
-			self['configuration'] = 'policy.conf'
+			self._set('configuration','policy.conf')
 
 try:
-	option = Option()
+	option = Option().option
 except	OptionError, e:
 	print '%s' % str(e)
 	sys.exit(1)
+
+# Debugging
 
 debug_option = not not option.debug & 1
         
 if debug_option:
 	option.display()
 	print "+"*80
-
-# Enabling (or not) psycho
-
-if not option['slow']:
-	try:
-		import psyco
-		psyco.full()
-		print 'Psyco found and enabled'
-	except ImportError:
-		print 'Psyco is not available'
 
 # Starting the service
 

@@ -12,97 +12,91 @@ from __future__ import with_statement
 
 import sys
 
-# Option
+# Enabling (or not) psycho
+
+try:
+	import psyco
+	psyco.full()
+	print 'Psyco found and enabled'
+except ImportError:
+	print 'Psyco is not available'
+
+# Options
 
 from scavenger.option import Option as BaseOption, OptionError
 
 class Option (BaseOption):
 	valid = ['debug','port','smarthost','hostname','organisation','domains','roles','contact','limit','timeout','control','url']
 
-	def _port (self):
-		port = self._env('port')
-		if not port:
-			self['port'] = 25
-		elif port.isdigit():
-			self['port'] = int(port)
-		else:
-			raise OptionError('the port must be an integer')
+	def option_port (self):
+		self.port('port')
 		
-	def _smarthost (self):
-		# get the networks to monitor
-		self['smarthost'] = self._env('smarthost')
-		if not self['smarthost']:
-			self['smarthost'] = '127.0.0.1'
+	def option_smarthost (self):
+		if self.has('smarthost'):
+			self.set('smarthost')
+		else:
+			self._set('smarthost','127.0.0.1')
 
-	def _hostname (self):
-		# get the networks to monitor
-		self['hostname'] = self._env('hostname')
-		if not self['hostname']:
-			self['hostname'] = 'localhost.localdomain'
+	def option_hostname (self):
+		if self.has('hostname'):
+			self.set('hostname')
+		else:
+			self._set('hostname','locahost.localdomain')
 
-	def _organisation (self):
-		self['organisation'] = self._env('organisation')
+	def option_organisation (self):
+		self.set('organisation')
 
-	def _domains (self):
-		# domain for which we will let the mails for 'roles' pass
-		self['domains'] = self._env('domains').split(' ')
-		if not len(self['domains']):
-			self['domains'] = [self['hostname'],]
+	def option_domains (self):
+		if self.has('domains'):
+			self.list('domains')
+		else:
+			self._set('domains',[self['hostname'],])
 
-	def _roles (self):
-		# address for which we will let the mails pass when domain matches 'domains'
-		self['roles'] = self._env('roles').split(' ')
-		if not len(self['roles']):
-			self['roles'] = ['postmaster','abuse']
+	def option_roles (self):
+		if self.has('roles'):
+			self.list('roles')
+		else:
+			self._set('roles',['postmaster','abuse'])
 
-	def _contact (self):
-		self['contact'] = self._env('contact')
-		if not self['contact']:
-			if self.has_key('domain'):
-				domain = self['domain']
-			elif self.has_key('hostname'):
-				domain = self['hostname']
+	def option_contact (self):
+		if self.has('contact'):
+			self.set('contact')
+		else:
+			if self.has('domain'):
+				self._set('contact',self.get('contact'))
+			elif self.has('hostname'):
+				self._set('contact',self.get('hostname'))
 			else:
-				domain = socket.gethostname()
-			self['contact'] = 'postmaster@%s' % domain
+				self._set('contact','postmaster@%s'%socket.gethostname())
 
-	def _limit (self):
-		limit = self._env('limit')
-		if not limit:
-			self['limit'] = 50
-		elif limit.isdigit():
-			self['limit'] = int(limit)
+	def option_limit (self):
+		if self.has('limit'):
+			self.number('limit',low=1)
 		else:
-			raise OptionError('limit per ip is not an integer')
-		if self['limit'] <= 0:
-			raise OptionError('limit per ip is not a positive integer')
+			self._set('limit',50)
 
-	def _timeout (self):
-		limit = self._env('timeout')
-		if not limit:
-			self['timeout'] = 20
-		elif limit.isdigit():
-			self['timeout'] = int(limit)
+	def option_timeout (self):
+		if self.has('timeout'):
+			self.number('timeout',low=0)
 		else:
-			raise OptionError('timeout is not an integer')
-		if self['timeout'] <= 0:
-			raise OptionError('timeout is not a positive integer')
+			self._set('timeout',20)
 
-	def _control (self):
-		self['control'] = self._env('control')
-		if not self['control']:
-			self['control'] = 'control'
+	def option_control (self):
+		if self.has('control'):
+			self.set('control')
+		else:
+			self._set('control','control')
 
-	def _url (self):
-		self['url'] = self._env('url')
-		if not self['url'].startswith('http://') and not self['url'].startswith('https://'):
-			raise OptionError('url need to starts with http[s]://')
+	def option_url (self):
+		self.url('url')
 
 try:
-        option = Option()
+        option = Option().option
 except OptionError, e:
         print str(e)
         sys.exit(1)
+
+# Debugging
 
 debug_option = not not option.debug & 1
 debug_connection = not not option.debug & 2

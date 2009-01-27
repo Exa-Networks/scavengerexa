@@ -10,9 +10,21 @@ See LICENSE for details.
 
 from __future__ import with_statement
 
+import os
 import sys
 import time
 import threading
+
+# Enabling (or not) psycho
+
+try:
+	import psyco
+	psyco.full()
+	print 'Psyco found and enabled'
+except ImportError:
+	print 'Psyco is not available'
+
+# Checking dependencies on netfilter
 
 try:
 	from netfilter.table import Table,IptablesError
@@ -21,62 +33,56 @@ except ImportError:
 	print "this program require python-netfilter http://opensource.bolloretelecom.eu/projects/python-netfilter/"
 	sys.exit(1)
 
-import os
+# Options
+
 from scavenger.action.option import Option as BaseOption, OptionError
 
 class Option (BaseOption):
-	valid = ['debug','slow','port','timeout', 'database','mta','ports','table','chain','jump', ]
+	valid = ['debug','port','timeout', 'database','mta','ports','table','chain','jump', ]
 
-	def _database (self):
-		self['database'] = self._env('database')
+	def option_port (self):
+		self.port('port')
 
-	def _mta (self):
-		self['mta'] = self._validate_service(self._env('mta'))
+	def option_database (self):
+		self.set('database')
 
-	def _ports (self):
-		self['ports'] = self._env('ports')
-		if not self['ports']:
-			self['ports'] = '25 587'
-		self['ports'] = [port for port in  self['ports'].split(' ') if port]
-		for port in self['ports']:
-			if not port.isdigit():
-				raise OptionError('port is not an integer')
-			if int(port) >= 65536:
-				raise OptionError('port is too big %s' % port)
+	def option_mta (self):
+		self.service('mta')
+
+	def option_ports (self):
+		if self.has('ports'):
+			ports = self._list('ports')
+		else:
+			ports = ['25','587']
+		for port in ports:
+			self._port('intercepted port',port)
+		self._set('ports',[int(p) for p in ports])
 
 	# Those are options but should not be changed unless you really know what you are doing ...
 
-	def _table (self):
-		self['table'] = self._env('table')
-		if not self['table']:
-			self['table'] = 'nat'
+	def option_table (self):
+		if self.has('table'):
+			self.set('table')
+		else:
+			self._set('table','nat')
 
-	def _chain (self):
-		self['chain'] = self._env('chain')
-		if not self['chain']:
-			self['chain'] = 'PREROUTING'
+	def option_chain (self):
+		if self.has('chain'):
+			self.set('chain')
+		else:
+			self._set('chain','PREROUTING')
 
-	def _jump (self):
-		self['jump'] = self._env('jump')
-		if not self['jump']:
-			self['jump'] = 'DNAT'
-
+	def option_jump (self):
+		if self.has('jump'):
+			self.set('jump')
+		else:
+			self._set('jump','DNAT')
 
 try:
-	option = Option()
+	option = Option().option
 except OptionError, e:
 	print str(e)
 	sys.exit(1)
-
-# Enabling (or not) psycho
-
-if not option['slow']:
-	try:
-		import psyco
-		psyco.full()
-		print 'Psyco found and enabled'
-	except ImportError:
-		print 'Psyco is not available'
 
 # Debugging
 

@@ -29,6 +29,7 @@ cd /opt/scavenger/daemon
 
 exec \
 	env \
+		debug="1" \
 		configuration="postfix.conf" \
 	$PYTHON policy.py \
 2>&1

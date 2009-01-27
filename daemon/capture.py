@@ -14,6 +14,17 @@ import time
 import random
 import socket
 
+# Enabling (or not) psycho
+
+try:
+	import psyco
+	psyco.full()
+	print 'Psyco found and enabled'
+except ImportError:
+	print 'Psyco is not available'
+
+# Options
+
 from scavenger.tools.ip import *
 from scavenger.option import Option as BaseOption, OptionError
 from scavenger.cache import ExpirationCache as Cache
@@ -21,77 +32,53 @@ from scavenger.capture.wire import Wire
 from scavenger.capture.parser import Parser
 
 class Option (BaseOption):
-	valid = ['debug','slow','diffusion','promiscuous','interface','internal','dispatch']
+	valid = ['debug','diffusion','promiscuous','interface','internal','dispatch','ports']
 
-	def _promiscuous (self):
-		# should the interface be in promiscuous mode
-		self['promiscuous'] = self._has('promiscuous')
+	def option_diffusion (self):
+		self.enum('diffusion',['none','rr','sh','all'])
+
+	def option_promiscuous (self):
+		self.boolean('promiscuous')
 	
-	def _interface (self):
-		if not self._has('interface'):
-			self['interface'] = None
+	def option_interface (self):
+		if self.has('interface'):
+			self.set('interface')
 		else:
-			self['interface'] = self._env('interface')
+			self._set('interface',None)
 
-	def _internal (self):
-		# get the networks to monitor
-		self['internal'] = []
+	def option_internal (self):
+		internal = []
+		for cidr in self._list('internal'):
+			internal.append(self._cidr('internal',cidr))
+		if len(internal) < 1:
+			raise OptionError('option internal please setup at least one ip range to monitor')
+		self._set('internal',internal)
 
-		for cidr in self._env('internal').split(' '):
-			if not cidr:
-				continue
-			self['internal'].append(self._validate_cidr(cidr))
+	def option_dispatch (self):
+		dispatchs = []
+		for dispatch in self._list('dispatch'):
+			dispatchs.append(self._service('dispatch',dispatch))
+		if len(dispatchs) < 1:
+			raise OptionError('option dispatch please setup at least one dispatch')
+		self._set('dispatch',dispatchs)
 
-		if len(self['internal']) < 1:
-			raise OptionError('please setup at least one CIDR to monitor, separated by space if multiple servers')
-
-
-	def _dispatch (self):
-		# get where to send the information gathered
-		self['dispatch'] = []
-
-		for dispatch in self._env('dispatch').split(' '):
-			if not dispatch:
-				continue
-			self['dispatch'].append(self._validate_service(dispatch))
-
-		if len(self['dispatch']) < 1:
-			raise OptionError('please setup at least one dispatch, separated by space if multiple dispatchs')
-
-#	def _memcache (self):
-#		self['memcache'] = []
-#
-#		for server in self._env('memcache').split(' '):
-#			if not server:
-#				continue
-#			self['memcache'].append(self._validate_service(server))
-#
-#		if len(self['memcache']) < 1:
-#			raise OptionError('please setup at least one memcache server, separated by space if multiple servers')
-
-
+	def option_ports (self):
+		# the ports to monitor
+		pass
 
 try:
-	option = Option()
+	option = Option(folder=os.path.join('scavenger','capture')).option
 except OptionError, e:
 	print str(e)
 	sys.exit(1)
+
+# Debugging
 
 debug_option = not not option.debug & 1
 debug_parser = not not option.debug & 2
 debug_cache = not not option.debug & 4
 debug_udp = not not option.debug & 8
 debug_wire = not not option.debug & 16
-
-# Enabling (or not) psycho
-
-if not option['slow']:
-	try:
-		import psyco
-		psyco.full()
-		print 'Psyco found and enabled'
-	except ImportError:
-		print 'Psyco is not available'
 
 if debug_option:
 	option.display()
