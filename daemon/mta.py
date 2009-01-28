@@ -10,7 +10,9 @@ See LICENSE for details.
 
 from __future__ import with_statement
 
+import os
 import sys
+import socket
 
 # Enabling (or not) psycho
 
@@ -26,7 +28,7 @@ except ImportError:
 from scavenger.option import Option as BaseOption, OptionError
 
 class Option (BaseOption):
-	valid = ['debug','port','smarthost','hostname','organisation','domains','roles','contact','limit','timeout','control','url']
+	valid = ['debug','port','hostname','smarthost','organisation','domains','roles','contact','limit','timeout','control','url']
 
 	def option_port (self):
 		self.port('port')
@@ -41,7 +43,7 @@ class Option (BaseOption):
 		if self.has('hostname'):
 			self.set('hostname')
 		else:
-			self._set('hostname','locahost.localdomain')
+			self._set('hostname',socket.gethostname())
 
 	def option_organisation (self):
 		self.set('organisation')
@@ -50,24 +52,28 @@ class Option (BaseOption):
 		if self.has('domains'):
 			self.list('domains')
 		else:
-			self._set('domains',[self['hostname'],])
+			hostname = socket.gethostname()
+			domain = '.'.join(hostname.split('.')[1:])
+			if domain in ['local','localdomain']:
+				raise OptionError('option domains, can not determine the domain name of the machine')
+			domains = [domain,] if domain else [hostname,]
+			self._set('domains',domains)
 
 	def option_roles (self):
 		if self.has('roles'):
 			self.list('roles')
 		else:
-			self._set('roles',['postmaster','abuse'])
+			self._set('roles',['postmaster','abuse','support'])
 
 	def option_contact (self):
 		if self.has('contact'):
 			self.set('contact')
 		else:
-			if self.has('domain'):
-				self._set('contact',self.get('contact'))
-			elif self.has('hostname'):
-				self._set('contact',self.get('hostname'))
-			else:
-				self._set('contact','postmaster@%s'%socket.gethostname())
+			hostname = socket.gethostname()
+			domain = '.'.join(hostname.split('.')[1:])
+			if domain in ['local','localdomain']:
+				raise OptionError('option domains, can not determine the domain name of the machine')
+			self._set('contact','postmaster@%s'%domain)
 
 	def option_limit (self):
 		if self.has('limit'):
@@ -91,7 +97,7 @@ class Option (BaseOption):
 		self.url('url')
 
 try:
-        option = Option().option
+	option = Option(folder=os.path.join('scavenger','mta')).option
 except OptionError, e:
         print str(e)
         sys.exit(1)

@@ -44,9 +44,10 @@ class Option (object):
 		self.etc = os.environ.get('ETC','/etc')
 		self.cache = os.environ.get('CACHE','/var/cache')
 		
+		opts = set(options) if len(options) else self.valid
+		self.__options = [o.lower() for o in opts]
 		self.__path = os.path.join(self.etc,folder)
 		self.__folder = folder 
-		self.__options = set(options) if len(options) else self.valid
 	
 		self.raw = {}
 		self.option = _Option()
@@ -63,15 +64,15 @@ class Option (object):
 		opts,_ = parser.parse_args()
 		
 		for option in self.__options:
+			fname = os.path.join(self.__path,option)
 			if getattr(opts,option) != None:
-				self.raw[option.lower()] = getattr(opts,option)
+				self.raw[option] = getattr(opts,option)
 				continue
 			if os.environ.has_key(option):
 				value = os.environ.get(option)
 				value.strip()
-				self.raw[option.lower()] = value
+				self.raw[option] = value
 				continue
-			fname = os.path.join(self.__path,option)
 			if os.path.isfile(fname):
 				lines = []
 				with open(fname,'r') as reader:
@@ -80,9 +81,8 @@ class Option (object):
 						if line == '' or line[0] == '#':
 							continue
 						lines.append(line)
-				self.raw[option.lower()] = ' '.join(lines)
+				self.raw[option] = ' '.join(lines)
 				continue
-			self.raw[option.lower()] = None
 		
 		for option in self.__options:
 			func = getattr(self,'option_%s' % option)
@@ -219,7 +219,7 @@ class Option (object):
 		return value
 
 	def url (self,name):
-		self._set(name,self._url(name,self.get(name),values))
+		self._set(name,self._url(name,self.get(name)))
 
 	def _url (self,name,url):
 		if not url.startswith('http://') and not url.startswith('https://'):
@@ -231,7 +231,3 @@ class Option (object):
 			self.number('debug',low=0)
 		else:
 			self._set('debug',0)
-
-
-if __name__ == '__main__':
-	 option = Option().display()

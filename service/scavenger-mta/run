@@ -21,18 +21,5 @@ fi
 cd /opt/scavenger/daemon
 
 exec \
-	env \
-		debug="7" \
-		port="25" \
-		organisation="Exa Networks" \
-		hostname="spam.mail.exa.net.uk" \
-		smarthost="smtp.exa-networks.co.uk" \
-		roles="abuse postmaster" \
-		domains="exa-networks.co.uk exa.net.uk" \
-		contact="support@exa-networks.co.uk" \
-		limit=50 \
-		timeout=60 \
-		control="exa" \
-		url="http://spam.exa.net.uk/" \
 	$PYTHON mta.py \
 2>&1
