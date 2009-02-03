@@ -86,9 +86,6 @@ class Spread (ScavengerPlugin):
 		self.max_spread = self.configuration.get('max_spread', 0)
 		return True
 
-	def getProtocols (self):
-		return ['scavenger_access_policy']
-
 	def getDatabase (self):
 		return ['postgresql','sqlite3','mysql']
 

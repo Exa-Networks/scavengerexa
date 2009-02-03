@@ -83,11 +83,7 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 		protocol = message['request']
 		state = message['protocol_state']
 		for plugin in self.plugins[state]:
-			if protocol in plugin.getProtocols():
-				yield plugin
-			else:
-				if self.debug: log.msg('plugin %-15s does not match (%s:%s)' % (plugin.getName(),protocol,state))
-	
+			yield plugin
 
 	def policeMessage (self,message):
 		self._storeMessage(message)

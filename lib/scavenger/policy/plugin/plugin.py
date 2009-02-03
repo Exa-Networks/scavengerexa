@@ -23,13 +23,13 @@ from scavenger.tools.database.pool import ConnectionPool, Connection
 from zope.interface import implements
 from twisted.plugin import IPlugin
 
-def getPlugins (type,db):
+def getPlugins (tp,db):
 	from twisted.plugin import getPlugins
 	from scavenger.policy import plugins
 	r = []
 	for plugin in getPlugins(ISpamPlugin,plugins):
 		database = plugin.getDatabase()
-		if type in plugin.getType() and (database == [] or db in database):
+		if tp in plugin.getType() and (database == [] or db in database):
 			r.append(plugin)
 	return r
 
@@ -47,9 +47,6 @@ class ISpamPlugin (Interface):
 	def getType ():
 		"""return the type of plugin, postfix or scavenger"""
 
-	def getProtocols ():
-		"""return which protocol this plugin works with"""
-	
 	def getStates ():
 		"""return at which states the plugin can be called (first one)"""
 	
@@ -168,9 +165,6 @@ class _SpamPlugin (object):
 
 	def getConnectionNumber(self):
 		return 2
-
-	def getProtocols (self):
-		return ['smtpd_access_policy',]
 
 	def threadSafe (self):
 		return True
@@ -329,11 +323,16 @@ class _SpamPlugin (object):
 		return True
 
 
+class MultiPlugin (_SpamPlugin):
+	def getType (self):
+		return []
+
+
 class PostfixPlugin (_SpamPlugin):
 	def getType (self):
-		return "postfix"
+		return ["postfix",]
 
 
 class ScavengerPlugin (_SpamPlugin):
 	def getType (self):
-		return "scavenger"
+		return ["scavenger",]

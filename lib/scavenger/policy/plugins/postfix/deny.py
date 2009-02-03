@@ -23,9 +23,6 @@ class DenyUser(response.ResponseFail):
 
 
 class Deny (PostfixPlugin):
-	def getProtocols (self):
-		return ['smtpd_access_policy','scavenger_access_policy']
-
 	def onInitialisation(self):
 		blocked = self.configuration.get('users', '')
 		self.blocked = ['^'+p+('$' if p.count('@') else '@.*$') for p in blocked.split()]

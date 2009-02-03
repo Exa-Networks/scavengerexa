@@ -23,9 +23,6 @@ class DenyUser(response.ResponseBlock):
 
 
 class Deny (ScavengerPlugin):
-	def getProtocols (self):
-		return ['scavenger_access_policy']
-
 	def onInitialisation(self):
 		blocked = self.configuration.get('users', '')
 		self.blocked = ['^'+p+('$' if p.count('@') else '@.*$') for p in blocked.split()]

@@ -97,9 +97,6 @@ class Helo (ScavengerPlugin):
 		self.max_helo = self.configuration.get('max_helo', 0)
 		return True
 
-	def getProtocols (self):
-		return ['scavenger_access_policy']
-
 	def getDatabase (self):
 		return ['postgresql','sqlite3','mysql']
 

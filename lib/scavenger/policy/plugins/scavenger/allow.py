@@ -23,9 +23,6 @@ class AllowUser(response.ResponseAccept):
 
 
 class Allow (ScavengerPlugin):
-	def getProtocols (self):
-		return ['scavenger_access_policy']
-
 	def onInitialisation(self):
 		passthrough = self.configuration.get('users', '')
 		self.passthrough = ['^'+p+('$' if p.count('@') else '@.*$') for p in passthrough.split()]
