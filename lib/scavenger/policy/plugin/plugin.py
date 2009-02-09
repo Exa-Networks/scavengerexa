@@ -65,6 +65,9 @@ class ISpamPlugin (Interface):
 	def onInitialisation ():
 		"""Is called when the plugin is initialised"""
 	
+	def isTraining ():
+		"""is the plugin only gathering data, or is it classifying as well"""
+	
 	def police (message):
 		"""returns what we think of a message"""
 
@@ -255,6 +258,9 @@ class _SpamPlugin (object):
 	def validateAttributes (self,message):
 		return True
 
+	def isTraining (self):
+		return False
+
 	def store (self,message):
 		if not self._messageContains(message,self.requiredAttributes()):
 			return response.DataError('the message is missing needed attribute for the plugin')
@@ -264,6 +270,8 @@ class _SpamPlugin (object):
 		return self._wrap(self.update,message)
 
 	def police (self,message):
+		if self.isTraining():
+			return response.ResponseContinue
 		return self._wrap(self.check,message)
 
 	def _wrap (self,function,message):
