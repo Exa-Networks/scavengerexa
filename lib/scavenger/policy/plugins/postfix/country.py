@@ -38,6 +38,16 @@ class Country(PostfixPlugin):
 			self.errors = ['can not import GeoIP library']
 			return False
 
+        def requiredAttributes(self, message):
+		return ['client_address']
+
+        def validateAttributes(self, message):
+                try:
+                        assert isinstance(message.get('client_address', None), str)
+                        return True
+                except AssertionError:
+                        return False
+
 	def isTraining(self):
 		res = self.configuration.get('training', False)
 		return res is True
@@ -52,9 +62,7 @@ class Country(PostfixPlugin):
 		if self.isTraining():
 			return response.ResponseContinue
 
-		ip = message.get('client_address', None)
-		if ip is None:
-			return response.DataError('no client ip address')
+		ip = message.get('client_address')
 		try:
 			res = self.countryOK(ip)
 			if res is False:

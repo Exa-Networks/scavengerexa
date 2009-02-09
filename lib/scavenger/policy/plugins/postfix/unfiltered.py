@@ -31,7 +31,10 @@ class UnfilteredDomain(response.ResponseAccept):
 	message = 'in exa global whitelist'
 
 
-class Database (PluginDatabase):
+class UnfilteredDB (PluginDatabase):
+	debug = False # do we need to explicitly set this here?
+	database_schema = [unfiltered_domains_create]
+
 	def getUnfilteredStatus(self, domain):
 		query = "select 'true' result from %s where recipient_domain = ?" % tables['table_unfiltered_domains']
 		res = self.fetchall(query, domain)
@@ -41,8 +44,14 @@ class Database (PluginDatabase):
 
 
 class Unfiltered(PostfixPlugin):
-	schema = [unfiltered_domains_create]
-	database_factory = Database
+	debug = False
+	factory = UnfilteredDB
+
+	def getDatabase(self):
+		return ['postgresql','sqlite3','mysql']
+
+	def requiredAttributes(self):
+		return ['recipient']
 
 	def isUnfiltered(self, domain):
 		return self.database.getUnfilteredStatus(domain)

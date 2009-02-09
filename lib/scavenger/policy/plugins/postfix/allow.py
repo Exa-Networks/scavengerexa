@@ -27,6 +27,9 @@ class Allow (PostfixPlugin):
 		passthrough = self.configuration.get('users', '')
 		self.passthrough = ['^'+p+('$' if p.count('@') else '@.*$') for p in passthrough.split()]
 		return True
+
+	def requiredAttributes(self):
+		return ['recipient']
 	
 	def validateAttributes(self, message):
 		try:

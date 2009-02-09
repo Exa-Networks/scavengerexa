@@ -52,7 +52,7 @@ class MailPolicyFactoryFromService (protocol.ServerFactory):
 		if service.getType() == 'scavenger':
 			self.protocol = ScavengerPolicyProtocol
 		elif service.getType() == 'postfix':
-			self.protocol = PostfixPolicyProtol 
+			self.protocol = PostfixPolicyProtocol 
 		else:
 			raise ValueError('unknow protocol option (scavenger,postfix)')
 

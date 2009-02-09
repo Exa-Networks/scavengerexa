@@ -119,6 +119,18 @@ class BWDB(PostfixPlugin):
 	def isTraining(self):
 		return self.training is True
 
+	def requiredAttributes(self):
+		return ['recipient', 'sender', 'client_address']
+
+	def validateAttributes(self, message):
+		try:
+			assert isinstance(message.get('recipient', None), str)
+			assert isinstance(message.get('sender', None), str)
+			assert isinstance(message.get('client_address', None), str)
+			return True
+		except AssertionError:
+			return False
+
 	def getBWListedIP(self, domain, ip):
 		if self.use_whitelist or self.use_blacklist:
 			if self.use_whitelist and self.use_blacklist:

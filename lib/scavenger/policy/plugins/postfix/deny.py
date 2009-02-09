@@ -27,6 +27,9 @@ class Deny (PostfixPlugin):
 		blocked = self.configuration.get('users', '')
 		self.blocked = ['^'+p+('$' if p.count('@') else '@.*$') for p in blocked.split()]
 		return True
+
+	def requiredAttributes(self):
+		return ['recipient', 'sender']
 	
 	def validateAttributes(self, message):
 		try:

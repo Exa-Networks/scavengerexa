@@ -27,6 +27,17 @@ except ImportError:
 	pass
 
 class Reverse(PostfixPlugin):
+
+	def requiredAttributes(self):
+		return ['client_address']
+
+        def validateAttributes(self, message):
+                try:
+                        assert isinstance(message.get('client_address', None), str)
+                        return True
+                except AssertionError:
+                        return False
+
 	def onInitialisation(self):
 		try:
 			self.delay = int(self.configuration.get('delay_time', 0))
@@ -60,8 +71,6 @@ class Reverse(PostfixPlugin):
 	def check(self, message):
 		ip = message.get('client_address', None)
 		client_name = message.get('client_name', None)
-		if ip is None:
-			return response.DataError('no client ip address')
 
 		try:
 			try:
