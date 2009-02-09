@@ -329,10 +329,6 @@ class MultiPlugin (_SpamPlugin):
 
 
 class PostfixPlugin (_SpamPlugin):
-	# XXX: why is this in _SpamPlugin and not here?
-	#def getProtocols (self):
-	#	return ['smtpd_access_policy',]
-
 	def getType (self):
 		return ["postfix",]
 
