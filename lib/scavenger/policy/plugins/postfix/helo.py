@@ -40,14 +40,6 @@ class Helo(PostfixPlugin):
 	def requiredAttributes(self):
 		return ['helo_name']
 
-        def validateAttributes(self, message):
-                try:
-                        assert isinstance(message.get('helo_name', None), str)
-                        return True
-                except AssertionError:
-                        return False
-
-
 	def onInitialisation(self):
 		self.valid_check_re = re.compile('^[\w-]+(\.[\w-]+)+$')
 		self.reject_ip = self.configuration.get('reject_ip_address', False)

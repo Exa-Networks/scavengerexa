@@ -126,13 +126,8 @@ class Grey(PostfixPlugin):
                 self.database.empty()
 		return True
 
-	def validateAttributes(self, message):
-		try:
-			assert message.get('client_address', None) is not None
-			assert message.get('timestamp', None) is not None
-			return True
-		except AssertionError:
-			return False
+	def requiredAttributes(self):
+		return ['client_address','timestamp']
 
 	def ignore(self, message):
 		if not self.use_whitelist:

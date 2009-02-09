@@ -31,13 +31,6 @@ class Deny (PostfixPlugin):
 	def requiredAttributes(self):
 		return ['recipient', 'sender']
 	
-	def validateAttributes(self, message):
-		try:
-			assert isinstance(message.get('recipient', None), str)
-			return True
-		except AssertionError:
-			return False
-
 	def check(self, message):
 		recipient = message.get('recipient', None)
 		try:

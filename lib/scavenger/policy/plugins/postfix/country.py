@@ -41,13 +41,6 @@ class Country(PostfixPlugin):
         def requiredAttributes(self, message):
 		return ['client_address']
 
-        def validateAttributes(self, message):
-                try:
-                        assert isinstance(message.get('client_address', None), str)
-                        return True
-                except AssertionError:
-                        return False
-
 	def isTraining(self):
 		res = self.configuration.get('training', False)
 		return res is True

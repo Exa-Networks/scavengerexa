@@ -52,14 +52,6 @@ class VmailBWList(PostfixPlugin):
 	def requiredAttributes (self):
 		return ['sender','recipient']
 
-        def validateAttributes(self, message):
-                try:
-                        assert isinstance(message.get('recipient', None), str)
-                        assert isinstance(message.get('sender', None), str)
-                        return True
-                except AssertionError:
-                        return False
-
 	def vmail_checkbwlist (self,domain,user,sender):
 		check = (
 			(lambda: vmailClient(self.host, self.port, domain, self.password).getoption(user, 'whitelist'), True),
