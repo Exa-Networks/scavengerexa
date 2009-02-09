@@ -137,10 +137,10 @@ class User (PostfixPlugin):
 
 	def requiredAttributes (self):
 		# Do not check for sender as we must allow bounces, which have empty sender
-		return ['client_address','recipient']
+		return ['client_address','recipient','protocol_state']
 
 	def check (self, message):
-		state = message.get('protocol_state','').upper()
+		state = message['protocol_state'].upper()
 		message.update(tables)
 		if state == 'RCPT':
 			return self.check_rcpt(message)
@@ -203,7 +203,7 @@ class User (PostfixPlugin):
 			return response.ResponseContinue
 		else:
 			sender = message.get('sender','')
-			recipient = message.get('recipient','')
+			recipient = message['recipient']
 			if sender == '':
 				sender = 'this bounce message'
 			else:

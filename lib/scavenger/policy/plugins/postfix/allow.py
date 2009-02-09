@@ -32,7 +32,7 @@ class Allow (PostfixPlugin):
 		return ['recipient']
 	
 	def check(self, message):
-		recipient = message.get('recipient', None)
+		recipient = message['recipient']
 		try:
 			user, domain = recipient.split('@')
 		except ValueError:

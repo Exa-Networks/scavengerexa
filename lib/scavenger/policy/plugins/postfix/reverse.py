@@ -62,7 +62,7 @@ class Reverse(PostfixPlugin):
 		return country.lower() in self.configuration.get('allowed_countries', [])
 
 	def check(self, message):
-		ip = message.get('client_address', None)
+		ip = message['client_address']
 		client_name = message.get('client_name', None)
 
 		try:

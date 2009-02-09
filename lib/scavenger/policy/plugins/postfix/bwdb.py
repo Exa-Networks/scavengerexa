@@ -144,7 +144,7 @@ class BWDB(PostfixPlugin):
 		if self.isTraining():
 			return response.ResponseContinue
 
-		recipient = message.get('recipient', None)
+		recipient = message['recipient']
 		if not recipient:
 			return response.ResponseContinue
 
@@ -153,9 +153,7 @@ class BWDB(PostfixPlugin):
 		except ValueError:
 			return response.DataError('invalid email address: %s' % recipient)
 
-		ip = message.get('client_address', None)
-		if ip is None:
-			return response.DataError('no client ip address')
+		ip = message['client_address']
 
 		try:
 			res = self.getBWListedIP(domain, ip)
@@ -164,7 +162,7 @@ class BWDB(PostfixPlugin):
 			if res is False:
 				return BlacklistingIP
 
-			sender = message.get('sender', None)
+			sender = message['sender']
 			# no sender if the mail is a bounce
 			if not sender:
 				return response.ResponseContinue

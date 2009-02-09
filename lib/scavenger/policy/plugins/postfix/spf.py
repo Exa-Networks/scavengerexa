@@ -41,8 +41,8 @@ class SPF(PostfixPlugin):
 		return ['client_address','client_name'] # sender is not required as it can be null
 
 	def check(self, message):
-		ip = message.get('client_address')
-		client_name = message.get('client_name')
+		ip = message['client_address']
+		client_name = message['client_name']
 		sender = message.get('sender', '')
 
 		if not sender:

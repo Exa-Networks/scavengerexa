@@ -50,7 +50,7 @@ class VmailBWList(PostfixPlugin):
 		return True
 
 	def requiredAttributes (self):
-		return ['sender','recipient']
+		return ['recipient'] # sender can be a bounce
 
 	def vmail_checkbwlist (self,domain,user,sender):
 		check = (
@@ -86,7 +86,7 @@ class VmailBWList(PostfixPlugin):
 		return None
 
 	def check(self, message):
-		recipient = message.get('recipient', '')
+		recipient = message['recipient']
 		sender = message.get('sender', '')
 
 		# bounce mail can not be whitelisted

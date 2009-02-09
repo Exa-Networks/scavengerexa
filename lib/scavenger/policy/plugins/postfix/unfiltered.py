@@ -57,8 +57,8 @@ class Unfiltered(PostfixPlugin):
 		return self.database.getUnfilteredStatus(domain)
 
 	def check(self, message):
-		recipient = message.get('recipient', None)
-
+		recipient = message['recipient']
+		
 		try:
 			user, domain = recipient.split('@')
 		except ValueError:

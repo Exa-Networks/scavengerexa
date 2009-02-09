@@ -29,10 +29,10 @@ class Deny (PostfixPlugin):
 		return True
 
 	def requiredAttributes(self):
-		return ['recipient', 'sender']
+		return ['recipient'] # sender could be a bounce
 	
 	def check(self, message):
-		recipient = message.get('recipient', None)
+		recipient = message['recipient']
 		try:
 			user, domain = recipient.split('@')
 		except ValueError:
@@ -43,7 +43,11 @@ class Deny (PostfixPlugin):
 			if re.compile(test).match(recipient):
 				return DenyUser('mail sent to a blocked address <%s>' % recipient)
 
-		sender = message.get('sender',None)
+		sender = message.get('sender','')
+		if not sender:
+			# got a bounce
+			return response.ResponseContinue
+		
 		try:
 			user, domain = sender.split('@')
 		except ValueError:

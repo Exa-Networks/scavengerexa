@@ -37,9 +37,6 @@ class HeloNotSelf(response.ResponseFail):
 
 
 class Helo(PostfixPlugin):
-	def requiredAttributes(self):
-		return ['helo_name']
-
 	def onInitialisation(self):
 		self.valid_check_re = re.compile('^[\w-]+(\.[\w-]+)+$')
 		self.reject_ip = self.configuration.get('reject_ip_address', False)
@@ -76,6 +73,8 @@ class Helo(PostfixPlugin):
 	
 	def check(self, message):
 		helo = message.get('helo_name','')
+		if not helo:
+			return HeloInvalid
 
 		try:
 			if self.reject_ip:

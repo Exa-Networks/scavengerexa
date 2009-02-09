@@ -38,8 +38,8 @@ class Country(PostfixPlugin):
 			self.errors = ['can not import GeoIP library']
 			return False
 
-        def requiredAttributes(self, message):
-		return ['client_address']
+	def requiredAttributes(self, message):
+		return ['client_address','client_name']
 
 	def isTraining(self):
 		res = self.configuration.get('training', False)
@@ -52,14 +52,11 @@ class Country(PostfixPlugin):
 		return country.lower() in self.configuration.get('allowed_countries', '').split(' ')
 
 	def check(self, message):
-		if self.isTraining():
-			return response.ResponseContinue
-
-		ip = message.get('client_address')
+		ip = message['client_address']
 		try:
 			res = self.countryOK(ip)
 			if res is False:
-				if message.get('client_name', None) is None:
+				if not message['client_name']:
 					return JingoMail
 
 		except:
