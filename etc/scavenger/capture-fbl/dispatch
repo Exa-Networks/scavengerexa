@@ -1,0 +1,4 @@
+# This file contains a list of IP:PORT with one entry per line (or one line separated with whitespace)
+# Those are the dispatch server to send the UDP message to
+
+127.0.0.1:25252

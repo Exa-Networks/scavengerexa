@@ -1,0 +1,28 @@
+#!/bin/sh
+
+export ETC=/opt/scavenger/etc
+export PYTHONPATH=$PYTHONPATH:/opt/scavenger/lib
+
+PYTHONS="python25 python2.5 python"
+
+for P in `echo $PYTHONS`;
+do
+	PYTHON=`which $P 2> /dev/null`
+	if [ ! -z "$PYTHON" ]; then
+		break
+	fi
+done
+
+if [ -z "$PYTHON" ]; then
+	echo "no python intepreter found"
+	sleep 10
+fi
+
+cd /opt/scavenger/daemon
+
+#	strace -vfF -o ./strace.txt \
+#	/usr/bin/softlimit -m 15000000 \
+
+exec \
+	$PYTHON capture-fbl.py \
+2>&1

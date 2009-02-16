@@ -1,0 +1,7 @@
+# This is the algorithm use to send the UDP packet to the dispatch server
+# sh:   source hash, perform an hashing on the sender IP and use this IP to determine the 'dispatch' server to contact
+# rr:   round robin, goes through all the entries in 'dispatch' and connect one server after the other
+# none: take the first entry in 'dispatch' only
+# all:  send an UDP message to all the location listed in 'dispatch'
+
+rr
