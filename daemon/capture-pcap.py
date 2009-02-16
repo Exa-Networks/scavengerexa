@@ -28,8 +28,8 @@ except ImportError:
 from scavenger.tools.ip import *
 from scavenger.option import Option as BaseOption, OptionError
 from scavenger.cache import ExpirationCache as Cache
-from scavenger.capture.wire import Wire
-from scavenger.capture.parser import Parser
+from scavenger.capture.pcap.wire import Wire
+from scavenger.capture.pcap.parser import Parser
 
 class Option (BaseOption):
 	valid = ['debug','diffusion','promiscuous','interface','internal','dispatch','ports']

@@ -1,8 +1,0 @@
-#!/bin/sh
-
-if [ ! -d /var/log/scavenger/capture ]; then
-	mkdir -p /var/log/scavenger/capture
-	chown nobody.nogroup /var/log/scavenger/capture
-fi
-
-exec /usr/bin/setuidgid nobody /usr/bin/multilog t s5000000 /var/log/scavenger/capture
