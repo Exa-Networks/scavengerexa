@@ -67,7 +67,7 @@ class Option (BaseOption):
 		pass
 
 try:
-	option = Option(folder=os.path.join('scavenger','capture')).option
+	option = Option(folder=os.path.join('scavenger','capture-pcap')).option
 except OptionError, e:
 	print str(e)
 	sys.exit(1)
