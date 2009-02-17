@@ -79,14 +79,20 @@ except OptionError, e:
 # Debugging
 
 debug_option = not not option.debug & 1
+debug_parser = not not option.debug & 2
+debug_udp = not not option.debug & 8
 
 if debug_option:
 	option.display()
+	print "debug parser", debug_parser
+	print "debug udp   ", debug_udp
 	print "+"*80
 
-parser = Parser(option.server,option.user,option.password)
+parser = Parser(option.proto,option.server,option.user,option.password)
 
 while True:
 	for message in parser.parse():
-		print message
+		if debug_udp:
+			print message
+		send_udp(option.diffusion,message['si'],option.dispatch,message)
 	time.sleep(option.interval)

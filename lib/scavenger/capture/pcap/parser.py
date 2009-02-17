@@ -75,6 +75,7 @@ class Parser (object):
 					self.__log('invalid command [%s]' % ''.join([c for c in str(line)[:4] if c.isalnum()]))
 
 					cache = self._factory.new()
+					cache['skip'] = False
 					cache['si'] = toips(self.si)
 					cache['di'] = toips(self.di)
 					cache['st'] = ''
@@ -88,6 +89,7 @@ class Parser (object):
 					self.__log('invalid command [%s]' % ''.join([c for c in str(line)[:4] if c.isalnum()]))
 
 					cache = self._factory.new()
+					cache['skip'] = False
 					cache['si'] = toips(self.si)
 					cache['di'] = toips(self.di)
 					cache['st'] = ''
@@ -109,6 +111,7 @@ class Parser (object):
 				self.__log('creating %s tracking' % cmd)
 
 				cache = self._factory.new()
+				cache['skip'] = False
 				cache['si'] = toips(self.si)
 				cache['di'] = toips(self.di)
 				cache['st'] = cmd
@@ -120,6 +123,7 @@ class Parser (object):
 			if cache is None:
 				if cmd == 'MAIL':
 					cache = self._factory.new()
+					cache['skip'] = False
 					cache['si'] = toips(self.si)
 					cache['di'] = toips(self.di)
 				else:

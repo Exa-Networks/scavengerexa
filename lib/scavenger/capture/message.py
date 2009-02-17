@@ -26,7 +26,6 @@ class CaptureMessageFactory (Factory):
 
 	def new (self):
 		message = Message()
-		message['skip'] = False
 		message['st'] = ""
 		message['he'] = ""
 		message['se'] = ""
