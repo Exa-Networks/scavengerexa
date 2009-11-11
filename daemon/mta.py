@@ -55,8 +55,8 @@ class Option (BaseOption):
 		else:
 			hostname = socket.gethostname()
 			domain = '.'.join(hostname.split('.')[1:])
-#			if domain in ['local','localdomain']:
-#				raise OptionError('option domains, can not determine the domain name of the machine')
+			if domain in ['local','localdomain']:
+				raise OptionError('option domains, can not determine the domain name of the machine')
 			domains = [domain,] if domain else [hostname,]
 			self._set('domains',domains)
 
@@ -72,8 +72,8 @@ class Option (BaseOption):
 		else:
 			hostname = socket.gethostname()
 			domain = '.'.join(hostname.split('.')[1:])
-#			if domain in ['local','localdomain']:
-#				raise OptionError('option domains, can not determine the domain name of the machine')
+			if domain in ['local','localdomain']:
+				raise OptionError('option domains, can not determine the domain name of the machine')
 			self._set('contact','postmaster@%s'%domain)
 
 	def option_limit (self):
