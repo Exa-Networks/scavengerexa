@@ -13,6 +13,7 @@ from __future__ import with_statement
 import os
 import sys
 import socket
+import traceback
 
 # Enabling (or not) psycho
 
@@ -28,7 +29,7 @@ except ImportError:
 from scavenger.option import Option as BaseOption, OptionError
 
 class Option (BaseOption):
-	valid = ['debug','port','hostname','smarthost','organisation','domains','roles','contact','limit','timeout','control','url']
+	valid = ['debug','port','hostname','smarthost','organisation','domains','roles','contact','limit','timeout','control','url','sampling_subject','sampling_body']
 
 	def option_port (self):
 		self.port('port')
@@ -54,8 +55,8 @@ class Option (BaseOption):
 		else:
 			hostname = socket.gethostname()
 			domain = '.'.join(hostname.split('.')[1:])
-			if domain in ['local','localdomain']:
-				raise OptionError('option domains, can not determine the domain name of the machine')
+#			if domain in ['local','localdomain']:
+#				raise OptionError('option domains, can not determine the domain name of the machine')
 			domains = [domain,] if domain else [hostname,]
 			self._set('domains',domains)
 
@@ -71,8 +72,8 @@ class Option (BaseOption):
 		else:
 			hostname = socket.gethostname()
 			domain = '.'.join(hostname.split('.')[1:])
-			if domain in ['local','localdomain']:
-				raise OptionError('option domains, can not determine the domain name of the machine')
+#			if domain in ['local','localdomain']:
+#				raise OptionError('option domains, can not determine the domain name of the machine')
 			self._set('contact','postmaster@%s'%domain)
 
 	def option_limit (self):
@@ -86,6 +87,18 @@ class Option (BaseOption):
 			self.number('timeout',low=0)
 		else:
 			self._set('timeout',20)
+
+	def option_sampling_subject (self):
+		if self.has('sampling_subject'):
+			self.number('sampling_subject',low=0)
+		else:
+			self._set('sampling_subject',10)
+
+	def option_sampling_body (self):
+		if self.has('sampling_body'):
+			self.number('sampling_body',low=0)
+		else:
+			self._set('sampling_body',100)
 
 	def option_control (self):
 		if self.has('control'):
@@ -118,6 +131,8 @@ if debug_option:
 
 forget='forget'
 stat='stat'
+subject='subject'
+body='body'
 
 message = {
 	'greeting':      "220 %s ESMTP [%s] [connection %s/%d seen %s]" % (option.hostname,option.organisation,'%d',option.limit,'%s'),
@@ -143,8 +158,7 @@ message = {
 	'email_denied':  "554 invalid email address",
 	'ok':            "250 ok",
 	'ready':         "250 ready",
-	'queued':        "250 ok mail queued",
-	'not_queued':    "451 could not send this mail, please retry later",
+	'queued'  :      "250 ok mail queued",
 }
 
 
@@ -152,23 +166,35 @@ info = {
 	'help':         "214-this is the mta information mode\r\n"
 	                "214-%-10s : show how many connection the deamon got from clients\r\n"
 	                "214-%-10s : reset all the counters\r\n"
+	                "214-%-10s <ip> : show the sampled subject (1 every %d mails)\r\n"
+	                "214-%-10s <ip> : show the sampled body    (1 every %d mails)\r\n"
 	                "214 ready when you are"
-	                 % (stat,forget),
-	stat:           "214-\r\n214 now go and crucify the infidel",
+	                 % (stat,forget,subject,option.sampling_subject,body,option.sampling_body),
+	stat:           "214-\r\n214 Now go and crucify the infidel",
 	forget:         "250 what did i do ?",
+	subject:        "214-\r\n214 Sorry if it is not what you expected",
+	body:           "214-\r\n214 You should have taken the blue pill - really",
 }
 
 answer = {
 	'pass' : {
 		'rcpt' : "250 ok",
 		'data' : "354 listening, come on ...",
+		'eod'  : "451 could not relay mail - this is a genuine problem from this server",
 		'quit' : "250 bye bye",
 		},
 	'block' : {
 		'rcpt' : "450 only mail to %s and the administrative domain are allowed" % ", ".join(option.roles),
 		'data' : "451 this mail will not be sent, please contact %s" % option.contact,
+		'eod'  : "451 sorry no mail for you", # we should never use this
 		'quit' : "221 no mail was sent, please contact %s, bye" % option.contact,
 	},
+	'record' : {
+		'rcpt' : "250 ok",
+		'data' : "354 send me the juice so I can record it",
+		'eod'  : "451 ok - I got the stuff, now go away",
+		'quit' : "451 no mail was sent, please contact %s, bye" % option.contact,
+	}
 }
 
 
@@ -195,6 +221,11 @@ def log_conversation (message):
 	if debug_conversation:
 		log(message)
 
+def trace (message):
+	log(message)
+	traceback.print_exc(file=sys.stderr)
+	sys.stderr.flush()
+	
 # MAIN
 
 from twisted.application import internet, service
@@ -202,10 +233,12 @@ from twisted.internet import protocol, reactor
 from twisted.protocols import basic
 from twisted.protocols import policies
 
+SAMPLE_SUBJECT = 1
+SAMPLE_BODY    = 1 << 1
+
 class MailProtocol(basic.LineReceiver):
 	def connectionMade(self):
 		self.info = False
-		self.state = 'block'
 		self.sender = ""
 		self.recipient = []
 		self.ehlo = ""
@@ -214,8 +247,14 @@ class MailProtocol(basic.LineReceiver):
 		self.in_data = False
 		self.seen = 0
 		self.accepted = False
+		self.allow = False
 		
 		self.seen,index = self.factory.connect(self.transport)
+		
+		self.sample  = 0 if self.seen % self.factory.sampling_subject else SAMPLE_SUBJECT
+		self.sample += 0 if self.seen % self.factory.sampling_body    else SAMPLE_BODY
+		
+		self.state = 'record' if self.sample else 'block'
 		
 		self.ip = self.transport.getPeer().host
 		try:
@@ -239,7 +278,7 @@ class MailProtocol(basic.LineReceiver):
 		try:
 			self.process(data)
 		except Exception, e:
-			log('Problem with the server : '+ str(e))
+			trace('Problem with the server : '+ str(e))
 			self.transport.loseConnection()
 			return
 	
@@ -320,6 +359,7 @@ class MailProtocol(basic.LineReceiver):
 			self.process_command(line)
 
 	def process_data (self,line):
+		# XXX: The strip could cause a collateral (if we cared)
 		if line.strip() != ".":
 			self.content += line
 			self.length += len(line)
@@ -329,12 +369,19 @@ class MailProtocol(basic.LineReceiver):
 		else:
 			self.in_data = False
 			
-			if self.sendmail():
-				log('connection %d mail sent from %s to %s' % (self.seen,self.sender,str(self.recipient)))
-				self.to_client(message['queued'])
+			if self.sample:
+				self.factory.store(self.transport,self.sample,self.content)
+			
+			if self.allow:
+				if self.sendmail():
+					log('connection %d mail sent from %s to %s' % (self.seen,self.sender,str(self.recipient)))
+					self.to_client(message['queued'])
+				else:
+					log('connection %d probleme trying to relay from %s to %s' % (self.seen,self.sender,str(self.recipient)))
+					self.to_client(answer[self.state]['eod'])
 			else:
 				log('connection %d mail denied from %s to %s' % (self.seen,self.sender,str(self.recipient)))
-				self.to_client(message['not_queued'])
+				self.to_client(answer[self.state]['eod'])
 		
 	def process_command (self,line):
 		parts = line.lower().split(' ')
@@ -362,7 +409,6 @@ class MailProtocol(basic.LineReceiver):
 			self.to_client(message['ok'])
 			
 		elif cmd == 'rcpt':
-			local = 'block'
 			if self.sender == "":
 				self.to_client(message['mail_first'])
 				log_conversation('connection %d forgot to give us a sender' % self.seen)
@@ -377,20 +423,20 @@ class MailProtocol(basic.LineReceiver):
 			for role in option.roles:
 				if email.startswith(role+'@'):
 					self.state = 'pass'
-					local = 'pass'
+					self.allow = True
 
 			for domain in option.domains:
 				if email.endswith("@"+domain):
 					self.state = 'pass'
-					local = 'pass'
+					self.allow = True
 
-			if local == 'pass':
+			if self.allow or self.sample:
 				self.recipient.append(email)
 				log_conversation('connection %d allowed recipient %s' % (self.seen,email))
 			else:
 				log_conversation('connection %d denied recipient %s' % (self.seen,email))
 
-			self.to_client(answer[local][cmd])
+			self.to_client(answer[self.state][cmd])
 			return
 
 		elif cmd == 'data':
@@ -413,12 +459,11 @@ class MailProtocol(basic.LineReceiver):
 			if self.ip != "unknown":
 				self.ip = "([%s])" % self.ip
 
-			self.content = """"Received: from %s %s%s
-          (envelope-sender <%s>)
-          by %s (mta-spam) with SMTP
-          for <%s>; %s -0000\r\n""" \
-			% (self.host,self.ehlo,self.ip,self.sender,option.hostname,self.recipient[0],time.strftime("%d %b %Y %H:%M:%S",time.gmtime()))
-
+			if self.allow:
+				self.content = """"Received: from %s %s%s\r\n          (envelope-sender <%s>)\r\n          by %s (mta-spam) with SMTP\r\n          for <%s>; %s -0000\r\n""" \
+						% (self.host,self.ehlo,self.ip,self.sender,option.hostname,self.recipient[0],time.strftime("%d %b %Y %H:%M:%S",time.gmtime()))
+			else:
+				self.content = ""
 			return
 
 		elif cmd in ('helo','ehlo'):
@@ -463,7 +508,7 @@ class MailProtocol(basic.LineReceiver):
 			if self.info:
 				for ip,f,l,c,r,s in self.factory.status():
 					self.to_client("214- %-12s  %-12s  %-16s %3s connected, %4s refused, %8s seen" % (f,l,ip,c,r,s))
-				self.to_client(info['stat'])
+				self.to_client(info[cmd])
 			else:
 				self.to_client(message['lazy'])
 			return
@@ -473,7 +518,27 @@ class MailProtocol(basic.LineReceiver):
 				if len(parts) > 1: ip = parts[1].strip()
 				else: ip = None
 				self.factory.forget(ip)
-				self.to_client(info[forget])
+				self.to_client(info[cmd])
+			else:
+				self.to_client(message['lazy'])
+			return
+
+		elif cmd == subject:
+			if self.info:
+				if len(parts) > 1: ip = parts[1].strip()
+				else: ip = None
+				self.to_client(self.factory.subject(ip))
+				self.to_client(info[cmd])
+			else:
+				self.to_client(message['lazy'])
+			return
+
+		elif cmd == body:
+			if self.info:
+				if len(parts) > 1: ip = parts[1].strip()
+				else: ip = None
+				self.to_client(self.factory.body(ip))
+				self.to_client(info[cmd])
 			else:
 				self.to_client(message['lazy'])
 			return
@@ -486,13 +551,17 @@ class MailProtocol(basic.LineReceiver):
 class MailFactory(protocol.ServerFactory):
 	protocol = MailProtocol
 	
-	def __init__ (self):
+	def __init__ (self,sampling_subject,sampling_body):
 		self.lock = threading.Lock()
 		self.connected = {}
 		self.refused = {}
 		self.seen = {}
 		self.first = {}
 		self.last = {}
+		self.subjects = {}
+		self.bodies = {}
+		self.sampling_subject = sampling_subject
+		self.sampling_body = sampling_body
 	
 	def connect (self,transport):
 		ip = transport.getPeer().host
@@ -518,7 +587,7 @@ class MailFactory(protocol.ServerFactory):
 		
 		transport.loseConnection()
 		log_connection('%s connection %d, refused %d' % (ip,seen,self.refused[ip]))
-		return seen,0
+		return seen,0,
 
 	def disconnect (self,protocol):
 		ip = protocol.transport.getPeer().host
@@ -561,11 +630,58 @@ class MailFactory(protocol.ServerFactory):
 				self.first = {}
 				self.last = {}
 	
-	
+	def store (self,transport,sample,content):
+		ip = transport.getPeer().host
+		
+		if sample & SAMPLE_SUBJECT:
+			subject = ''
+			for line in (_.strip().lower() for _ in content.split('\r')):
+				if line.lower().startswith('subject:'):
+					subject = "%s %s" % (time.strftime("%d %b %Y %H:%M:%S",time.gmtime()), line[8:].lstrip())
+				if not line:
+					break
+			with self.lock:
+				try:
+					self.subjects[ip].append(subject)
+					if len(self.subjects[ip]) > 1000:
+						self.subjects[ip] = self.subject[ip][:1000]
+				except:
+					self.subjects[ip] = [subject]
+		
+		if sample & SAMPLE_BODY:
+			body = '\r\n'.join('214-%s' % line for line in content.split('\r\n'))
+			with self.lock:
+				try:
+					self.bodies[ip].append(body)
+					if len(self.bodies[ip]) > 10:
+						self.bodies[ip] = self.body[ip][:10]
+				except:
+					self.bodies[ip] = [body]
+		
+
+	def subject (self,ip):
+		prefix = '\r\n214-Subject %s ' % ip
+		with self.lock:
+			data = self.subjects.get(ip,[])
+			if data:
+				return '214-' + prefix + prefix.join(data)
+			else:
+				return '214-' + prefix + '[no data available]'
+
+	def body (self,ip):
+		prefix = '\r\n214-BODY %s\r\n' % ip
+		with self.lock:
+			data = self.bodies.get(ip,[])
+			if data:
+				return '214-' + ('-'*76) + prefix + prefix.join(data)
+			else:
+				return '214-' + ('-'*76) + prefix + '[no data available]'
+
+
 application = service.Application('mta-spam')
 serviceCollection = service.IServiceCollection(application)
 
-factory = policies.TimeoutFactory(MailFactory(),timeoutPeriod=option.timeout)
+factory = policies.TimeoutFactory(MailFactory(option.sampling_subject,option.sampling_body),timeoutPeriod=option.timeout)
 internet.TCPServer(option.port, factory).setServiceParent(serviceCollection)
 
 serviceCollection.startService()
