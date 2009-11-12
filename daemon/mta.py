@@ -158,7 +158,7 @@ message = {
 	'email_denied':  "554 invalid email address",
 	'ok':            "250 ok",
 	'ready':         "250 ready",
-	'queued'  :      "250 ok mail queued",
+	'queued':        "250 ok mail queued",
 }
 
 
@@ -236,8 +236,8 @@ from twisted.protocols import policies
 SAMPLE_SUBJECT = 1
 SAMPLE_BODY    = 1 << 1
 
-class MailProtocol(basic.LineReceiver):
-	def connectionMade(self):
+class MailProtocol (basic.LineReceiver):
+	def connectionMade (self):
 		self.info = False
 		self.sender = ""
 		self.recipient = []
@@ -270,7 +270,7 @@ class MailProtocol(basic.LineReceiver):
 			self.to_client(message['overloaded'] % self.seen)
 			self.transport.loseConnection()
 
-	def connectionLost(self, reason):
+	def connectionLost (self, reason):
 		log_connection("connection %d closing" % self.seen)
 		self.factory.disconnect(self)
 	
@@ -548,7 +548,7 @@ class MailProtocol(basic.LineReceiver):
 			self.to_client(message['lazy'])
 			return
 
-class MailFactory(protocol.ServerFactory):
+class MailFactory (protocol.ServerFactory):
 	protocol = MailProtocol
 	
 	def __init__ (self,sampling_subject,sampling_body):
@@ -587,7 +587,7 @@ class MailFactory(protocol.ServerFactory):
 		
 		transport.loseConnection()
 		log_connection('%s connection %d, refused %d' % (ip,seen,self.refused[ip]))
-		return seen,0,
+		return seen,0
 
 	def disconnect (self,protocol):
 		ip = protocol.transport.getPeer().host
@@ -622,6 +622,8 @@ class MailFactory(protocol.ServerFactory):
 				del self.seen[ip]
 				del self.first[ip]
 				del self.last[ip]
+				del self.subjects[ip]
+				del self.bodies[ip]
 			
 			if ip == None:
 				log("removing statistic all ips")
@@ -629,6 +631,8 @@ class MailFactory(protocol.ServerFactory):
 				self.seen = {}
 				self.first = {}
 				self.last = {}
+				self.subjects = {}
+				self.bodies = {}
 	
 	def store (self,transport,sample,content):
 		ip = transport.getPeer().host
@@ -641,23 +645,16 @@ class MailFactory(protocol.ServerFactory):
 				if not line:
 					break
 			with self.lock:
-				try:
-					self.subjects[ip].append(subject)
-					if len(self.subjects[ip]) > 1000:
-						self.subjects[ip] = self.subject[ip][:1000]
-				except:
-					self.subjects[ip] = [subject]
+				self.subjects.setdefault(ip,[]).append(subject)
+				if len(self.subjects[ip]) > 1000:
+					self.subjects[ip] = self.subject[ip][:1000]
 		
 		if sample & SAMPLE_BODY:
 			body = '\r\n'.join('214-%s' % line for line in content.split('\r\n'))
 			with self.lock:
-				try:
-					self.bodies[ip].append(body)
-					if len(self.bodies[ip]) > 10:
-						self.bodies[ip] = self.body[ip][:10]
-				except:
-					self.bodies[ip] = [body]
-		
+				self.bodies.setdefault(ip,[]).append(body)
+				if len(self.bodies[ip]) > 10:
+					self.bodies[ip] = self.body[ip][:10]
 
 	def subject (self,ip):
 		prefix = '\r\n214-Subject %s ' % ip
