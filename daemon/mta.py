@@ -675,7 +675,7 @@ class MailFactory(protocol.ServerFactory):
 			if data:
 				return '214-' + ('-'*76) + prefix + prefix.join(data)
 			else:
-				return '214-' + ('-'*76) + prefix + '[no data available]'
+				return '214-' + ('-'*76) + prefix + '214-[no data available]'
 
 
 application = service.Application('mta-spam')
