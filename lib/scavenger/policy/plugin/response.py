@@ -20,7 +20,7 @@ class PostfixResponse (PluginResponse):
 	type = 'postfix'
 	web_code = ''
 
-	def __init__ (self,message,delay):
+	def __init__ (self,message,delay=0):
 		self.message = message
 		self.delay = delay
 	
