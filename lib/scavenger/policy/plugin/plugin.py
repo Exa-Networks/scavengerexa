@@ -302,7 +302,7 @@ class _SpamPlugin (object):
 	def _cleanup(self,_):
 		return self.cleanup()
 		
-	def update(self):
+	def update(self,message):
 		return
 
 	def cleanup(self):
