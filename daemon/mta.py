@@ -29,7 +29,7 @@ except ImportError:
 from scavenger.option import Option as BaseOption, OptionError
 
 class Option (BaseOption):
-	valid = ['debug','port','hostname','smarthost','organisation','domains','roles','contact','limit','timeout','control','url','sampling_subject','sampling_body']
+	valid = ['debug','port','hostname','smarthost','organisation','domains','roles','contact','limit','timeout','control','url','sampling_subject','sampling_body','max_size_body']
 
 	def option_port (self):
 		self.port('port')
@@ -105,6 +105,12 @@ class Option (BaseOption):
 			self.set('control')
 		else:
 			self._set('control','control')
+
+	def option_max_size_body (self):
+		if self.has('max_size_body'):
+			self.number('max_size_body',low=0)
+		else:
+			self._set('max_size_body',10000)
 
 	def option_url (self):
 		self.url('url')
@@ -359,13 +365,16 @@ class MailProtocol (basic.LineReceiver):
 			self.process_command(line)
 
 	def process_data (self,line):
-		# XXX: The strip could cause a collateral (if we cared)
-		if line.strip() != ".":
-			self.content += line
-			self.length += len(line)
-			
-			if self.length > 100000:
-				raise ValueError("as you need")
+		if line.strip().split('\r\n')[-1] != ".":
+			len_line = len(line)
+			if self.allow:
+				# XXX: we may end up sending a . at then end of the mail we relay
+				self.content += line
+				self.length += len_line
+			elif self.sample:
+				if self.length + len_line < self.factory.max_size_body:
+					self.content += line
+					self.length += len_line
 		else:
 			self.in_data = False
 			
@@ -430,9 +439,12 @@ class MailProtocol (basic.LineReceiver):
 					self.state = 'pass'
 					self.allow = True
 
-			if self.allow or self.sample:
+			if self.allow:
 				self.recipient.append(email)
 				log_conversation('connection %d allowed recipient %s' % (self.seen,email))
+			elif self.sample:
+				self.recipient.append(email)
+				log_conversation('connection %d allowed for recording recipient %s' % (self.seen,email))
 			else:
 				log_conversation('connection %d denied recipient %s' % (self.seen,email))
 
@@ -454,12 +466,11 @@ class MailProtocol (basic.LineReceiver):
 
 			self.in_data = True
 
-			if self.ehlo != "":
-				self.ehlo = "(HELO %s) " % self.ehlo
-			if self.ip != "unknown":
-				self.ip = "([%s])" % self.ip
-
 			if self.allow:
+				if self.ehlo != "":
+					self.ehlo = "(HELO %s) " % self.ehlo
+				if self.ip != "unknown":
+					self.ip = "([%s])" % self.ip
 				self.content = """"Received: from %s %s%s\r\n          (envelope-sender <%s>)\r\n          by %s (mta-spam) with SMTP\r\n          for <%s>; %s -0000\r\n""" \
 						% (self.host,self.ehlo,self.ip,self.sender,option.hostname,self.recipient[0],time.strftime("%d %b %Y %H:%M:%S",time.gmtime()))
 			else:
@@ -551,7 +562,7 @@ class MailProtocol (basic.LineReceiver):
 class MailFactory (protocol.ServerFactory):
 	protocol = MailProtocol
 	
-	def __init__ (self,sampling_subject,sampling_body):
+	def __init__ (self,sampling_subject,sampling_body,max_size_body):
 		self.lock = threading.Lock()
 		self.connected = {}
 		self.refused = {}
@@ -562,6 +573,7 @@ class MailFactory (protocol.ServerFactory):
 		self.bodies = {}
 		self.sampling_subject = sampling_subject
 		self.sampling_body = sampling_body
+		self.max_size_body = max_size_body
 	
 	def connect (self,transport):
 		ip = transport.getPeer().host
@@ -638,6 +650,7 @@ class MailFactory (protocol.ServerFactory):
 		ip = transport.getPeer().host
 		
 		if sample & SAMPLE_SUBJECT:
+			log('storing subject for %s' % ip)
 			subject = ''
 			for line in (_.strip().lower() for _ in content.split('\r')):
 				if line.lower().startswith('subject:'):
@@ -650,6 +663,7 @@ class MailFactory (protocol.ServerFactory):
 					self.subjects[ip] = self.subject[ip][:1000]
 		
 		if sample & SAMPLE_BODY:
+			log('storing body for %s' % ip)
 			body = '\r\n'.join('214-%s' % line for line in content.split('\r\n'))
 			with self.lock:
 				self.bodies.setdefault(ip,[]).append(body)
@@ -678,7 +692,7 @@ class MailFactory (protocol.ServerFactory):
 application = service.Application('mta-spam')
 serviceCollection = service.IServiceCollection(application)
 
-factory = policies.TimeoutFactory(MailFactory(option.sampling_subject,option.sampling_body),timeoutPeriod=option.timeout)
+factory = policies.TimeoutFactory(MailFactory(option.sampling_subject,option.sampling_body,option.max_size_body),timeoutPeriod=option.timeout)
 internet.TCPServer(option.port, factory).setServiceParent(serviceCollection)
 
 serviceCollection.startService()
