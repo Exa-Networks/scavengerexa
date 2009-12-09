@@ -92,13 +92,13 @@ class Option (BaseOption):
 		if self.has('sampling_subject'):
 			self.number('sampling_subject',low=0)
 		else:
-			self._set('sampling_subject',10)
+			self._set('sampling_subject',500)
 
 	def option_sampling_body (self):
 		if self.has('sampling_body'):
 			self.number('sampling_body',low=0)
 		else:
-			self._set('sampling_body',100)
+			self._set('sampling_body',20)
 
 	def option_control (self):
 		if self.has('control'):
@@ -256,9 +256,14 @@ class MailProtocol (basic.LineReceiver):
 		self.allow = False
 		
 		self.seen,index = self.factory.connect(self.transport)
-		
-		self.sample  = 0 if self.seen % self.factory.sampling_subject else SAMPLE_SUBJECT
-		self.sample += 0 if self.seen % self.factory.sampling_body    else SAMPLE_BODY
+
+		self.sample = 0
+		if self.factory.sampling_subject:
+			if self.seen == 0 or self.seen % self.factory.sampling_subject:
+				self.sample += SAMPLE_SUBJECT
+		if self.factory.sampling_body:
+			if self.seen == 0 or self.seen % self.factory.sampling_body:
+				self.sample += SAMPLE_BODY
 		
 		self.state = 'record' if self.sample else 'block'
 		
@@ -659,16 +664,16 @@ class MailFactory (protocol.ServerFactory):
 					break
 			with self.lock:
 				self.subjects.setdefault(ip,[]).append(subject)
-				if len(self.subjects[ip]) > 1000:
-					self.subjects[ip] = self.subject[ip][:1000]
+				if len(self.subjects[ip]) > self.sampling_subject:
+					self.subjects[ip] = self.subject[ip][:self.sampling_subject]
 		
 		if sample & SAMPLE_BODY:
 			log('storing body for %s' % ip)
 			body = '\r\n'.join('214-%s' % line for line in content.split('\r\n'))
 			with self.lock:
 				self.bodies.setdefault(ip,[]).append(body)
-				if len(self.bodies[ip]) > 10:
-					self.bodies[ip] = self.body[ip][:10]
+				if len(self.bodies[ip]) > self.sampling_body:
+					self.bodies[ip] = self.body[ip][:self.sampling_body]
 
 	def subject (self,ip):
 		prefix = '\r\n214-Subject %s ' % ip
