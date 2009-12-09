@@ -29,7 +29,7 @@ except ImportError:
 from scavenger.option import Option as BaseOption, OptionError
 
 class Option (BaseOption):
-	valid = ['debug','port','hostname','smarthost','organisation','domains','roles','contact','limit','timeout','control','url','sampling_subject','sampling_body','max_size_body']
+	valid = ['debug','port','hostname','smarthost','organisation','domains','roles','contact','limit','timeout','control','url','sampling_subject','nb_subject','sampling_body','nb_body','max_size_body']
 
 	def option_port (self):
 		self.port('port')
@@ -92,7 +92,7 @@ class Option (BaseOption):
 		if self.has('sampling_subject'):
 			self.number('sampling_subject',low=0)
 		else:
-			self._set('sampling_subject',500)
+			self._set('sampling_subject',10)
 
 	def option_sampling_body (self):
 		if self.has('sampling_body'):
@@ -100,17 +100,29 @@ class Option (BaseOption):
 		else:
 			self._set('sampling_body',20)
 
-	def option_control (self):
-		if self.has('control'):
-			self.set('control')
+	def option_nb_subject (self):
+		if self.has('nb_subject'):
+			self.number('nb_subject',low=0)
 		else:
-			self._set('control','control')
+			self._set('nb_subject',100)
+
+	def option_nb_body (self):
+		if self.has('nb_body'):
+			self.number('nb_body',low=0)
+		else:
+			self._set('nb_body',50)
 
 	def option_max_size_body (self):
 		if self.has('max_size_body'):
 			self.number('max_size_body',low=0)
 		else:
 			self._set('max_size_body',10000)
+
+	def option_control (self):
+		if self.has('control'):
+			self.set('control')
+		else:
+			self._set('control','control')
 
 	def option_url (self):
 		self.url('url')
@@ -567,7 +579,7 @@ class MailProtocol (basic.LineReceiver):
 class MailFactory (protocol.ServerFactory):
 	protocol = MailProtocol
 	
-	def __init__ (self,sampling_subject,sampling_body,max_size_body):
+	def __init__ (self,sampling_subject,nb_subject,sampling_body,nb_body,max_size_body):
 		self.lock = threading.Lock()
 		self.connected = {}
 		self.refused = {}
@@ -577,7 +589,9 @@ class MailFactory (protocol.ServerFactory):
 		self.subjects = {}
 		self.bodies = {}
 		self.sampling_subject = sampling_subject
+		self.nb_subject = nb_subject
 		self.sampling_body = sampling_body
+		self.nb_body = nb_body
 		self.max_size_body = max_size_body
 	
 	def connect (self,transport):
@@ -664,16 +678,16 @@ class MailFactory (protocol.ServerFactory):
 					break
 			with self.lock:
 				self.subjects.setdefault(ip,[]).append(subject)
-				if len(self.subjects[ip]) > self.sampling_subject:
-					self.subjects[ip] = self.subject[ip][:self.sampling_subject]
+				if len(self.subjects[ip]) > self.nb_subject:
+					self.subjects[ip] = self.subject[ip][:self.nb_subject]
 		
 		if sample & SAMPLE_BODY:
 			log('storing body for %s' % ip)
 			body = '\r\n'.join('214-%s' % line for line in content.split('\r\n'))
 			with self.lock:
 				self.bodies.setdefault(ip,[]).append(body)
-				if len(self.bodies[ip]) > self.sampling_body:
-					self.bodies[ip] = self.body[ip][:self.sampling_body]
+				if len(self.bodies[ip]) > self.nb_body:
+					self.bodies[ip] = self.body[ip][:self.nb_body]
 
 	def subject (self,ip):
 		prefix = '\r\n214-Subject %s ' % ip
@@ -697,7 +711,7 @@ class MailFactory (protocol.ServerFactory):
 application = service.Application('mta-spam')
 serviceCollection = service.IServiceCollection(application)
 
-factory = policies.TimeoutFactory(MailFactory(option.sampling_subject,option.sampling_body,option.max_size_body),timeoutPeriod=option.timeout)
+factory = policies.TimeoutFactory(MailFactory(option.sampling_subject,option.nb_subject,option.sampling_body,option.nb_body,option.max_size_body),timeoutPeriod=option.timeout)
 internet.TCPServer(option.port, factory).setServiceParent(serviceCollection)
 
 serviceCollection.startService()
