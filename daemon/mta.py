@@ -382,7 +382,7 @@ class MailProtocol (basic.LineReceiver):
 			self.process_command(line)
 
 	def process_data (self,line):
-		if line.strip().split('\r\n')[-1] != ".":
+		if line.endswith('\r\n') and line.rstrip().rsplit('\r\n',1)[-1] != ".":
 			len_line = len(line)
 			if self.allow:
 				# XXX: we may end up sending a . at then end of the mail we relay
