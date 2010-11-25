@@ -679,7 +679,7 @@ class MailFactory (protocol.ServerFactory):
 			with self.lock:
 				self.subjects.setdefault(ip,[]).append(subject)
 				if len(self.subjects[ip]) > self.nb_subject:
-					self.subjects[ip] = self.subject[ip][:self.nb_subject]
+					self.subjects[ip] = self.subjects[ip][:self.nb_subject]
 		
 		if sample & SAMPLE_BODY:
 			log('storing body for %s' % ip)
